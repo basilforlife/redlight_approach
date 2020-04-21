@@ -103,8 +103,40 @@ class Approach:
         
         return result
 
-    def find_max_next_state(self):
+    # This fn take a state and a timestep, and returns the max value and location
+    # of the states it can reach at the next timestep.
+    def find_max_next_state(self, idx, delta_t):
+        reachable_mask = self.adj_matrix[idx] # relevant row of adj_matrix
+        next_state_vals = self.I[delta_t-1] # next timestep values of states
+        reachable_vals = reachable_mask * next_state_vals 
+        max_reachable = np.max(reachable_vals)
+        argmax_reachable = np.argmax(reachable(vals))
+        return (max_reachable, argmax_reachable) 
 
-    def calcI(self):
+    def calc_I(self, idx, delta_t):
+        # TODO make dist for event G
+        alpha = # probabiliy of event G occurring right now
+        max_reachable, argmax_reachable = find_max_next_state(idx, delta_t)
 
+        # weighted value if light turns green right now
+        cash_in_component = alpha * self.rho(idx, idx_to_state(idx), delta_t)
+
+        # weighted expected value if light does not turn green right now
+        not_cash_in_component = (1 - alpha) * max_reachable
+
+        # add up for total expected value
+        value = cash_in_component + not_cash_in_component
+
+        # return expected value and pointer to next state
+        return (value, argmax_reachable)
+
+    # This runs the bulk of the algorithm. It calculates I recursively
+    # for every state
+    def backward_pass(self):
+        pass
+        
+    # This fn can be run after I is defined everywhere from backward_pass().
+    # it takes a path through the state space over time, and the result of 
+    # this function is the desired behavior
     def forward_pass(self):
+        pass
