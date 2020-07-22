@@ -8,6 +8,15 @@
 import numpy as np
 from math import floor, ceil
 
+# This fn rounds things to the nearest discrete step
+def round_to_step(value, step_size, behavior='round'):
+    if behavior == 'round':
+        result = round(value / step_size) * step_size 
+    if behavior == 'floor':
+        result = floor(value / step_size) * step_size 
+    if behavior == 'ceil':
+        result = ceil(value / step_size) * step_size 
+    return result
 
 # State class holds a vehicle state
 class State:
@@ -32,7 +41,7 @@ class Approach:
     # Set the parameters that characterize the world
     def set_world_params(self, v_max, a_max):
 
-        # set v_max to the nearest smaller integer multiple of v_step s.t. 
+        # set v_max to the nearest smaller integer multiple of v_step
         self.v_max = floor(v_max / self.v_step) * self.v_step
         self.a_max = a_max
 
@@ -40,8 +49,8 @@ class Approach:
     # x_start should be negative
     def set_init_conditions(self, x_start, v_start):
         assert(x_start < 0), 'x_start should be negative'
-        self.x_min = round(x_start / self.x_step) * self.x_step # position at which vehicle starts at 
-        v_start_discrete = round(v_start / self.v_step) * self.v_step
+        self.x_min = round_to_step(x_start, self.x_step) # position at which vehicle starts at 
+        v_start_discrete = round_to_step(v_start, self.v_step)
         self.initial_state = State(self.x_min, v_start_discrete)
 
     # Compute the size of the state space
@@ -54,7 +63,7 @@ class Approach:
     # Convert state object to index
     def state_to_idx(self, state):
 
-        # This formula gives a bijection from state to index
+        # This equation gives a bijection from state to index
         idx = self.state_space_shape[1] * state.v + state.x
         return idx
 
@@ -77,14 +86,14 @@ class Approach:
         for i in range(ss_flat_size):
             state = self.idxToState(i)
             v_min, v_max = state.v - self.a_max, state.v + self.a_max # min, max of reachable states
-            v_min_discrete = ceil(v_min / self.v_step) * self.v_step
-            v_max_discrete = floor(v_max / self.v_step) * self.v_step
+            v_min_discrete = round_to_step(v_min, self.v_step, behavior='ceil')
+            v_max_discrete = round_to_step(v_max, self.v_step, behavior='floor')
 
             # Iterate over reachable velocities
             for v_new in np.arange(v_min_discrete, v_max_discrete, self.v_step): 
                 v_avg = (state.v + v_new)/2 # avg velocity over timestep
                 x_new = state.x + v_avg * self.t_step # change in position over timestep
-                x_new_discrete = round(x_new / self.x_step) * x_step
+                x_new_discrete = round_to_step(x_new, self.x_step)
                 new_state = State(x_new, v_new_discrete)
                 self.adj_matrix[i, stateToIdx(new_state)] = True # set appropriate edge to True
 
@@ -110,13 +119,13 @@ class Approach:
         next_state_vals = self.I[delta_t-1] # next timestep values of states
         reachable_vals = reachable_mask * next_state_vals 
         max_reachable = np.max(reachable_vals)
-        argmax_reachable = np.argmax(reachable(vals))
+        argmax_reachable = np.argmax(reachable_vals)
         return (max_reachable, argmax_reachable) 
 
     def calc_I(self, idx, delta_t):
         # TODO make dist for event G
         alpha = # probabiliy of event G occurring right now
-        max_reachable, argmax_reachable = find_max_next_state(idx, delta_t)
+        max_reachable, argmax_reachable = self.find_max_next_state(idx, delta_t)
 
         # weighted value if light turns green right now
         cash_in_component = alpha * self.rho(idx, idx_to_state(idx), delta_t)
