@@ -1,3 +1,4 @@
+from itertools import product
 import json
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,20 +35,21 @@ def init_state():
 approach = approach()
 approach.build_adjacency_matrix()
 M = approach.adj_matrix
-m = np.reshape(M[0], approach.state_space_shape)
+ss_size = approach.state_space_shape
 
 # Plot how many states are reachable
-#reachable_sum = [M[i].sum() for i in range(approach.state_space_flat_size)]
-#reachable_sum = np.reshape(reachable_sum, approach.state_space_shape)
-#plt.imshow(reachable_sum, cmap='gray')
-#plt.colorbar()
-#plt.show()
+reachable_sum = [M[x,v].sum() for x, v in product(range(ss_size[0]), range(ss_size[1]))]
+reachable_sum = np.reshape(reachable_sum, ss_size)
+s = State(-70, 10)
+i, j = approach.state_to_indices(s)
+reachable_sum[i,j] = 7
+plt.imshow(reachable_sum, cmap='gray')
+plt.colorbar()
+plt.show()
 
 #Plot reachable states from one state
-idx = 1126
-state = approach.idx_to_state(idx)
-print(f'state.x = {state.x}; state.v = {state.v}')
-plt.imshow(M[idx].reshape(approach.state_space_shape))
+M[i,j][i,j] = True
+plt.imshow(M[i,j])
 plt.show()
 
 

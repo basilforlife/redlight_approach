@@ -22,14 +22,10 @@ class TestApproach:
     def test_compute_state_space_shape(self, approach, state_space_shape):
         assert approach.state_space_shape == state_space_shape
 
-    def test_idx_state_conversions(self, approach, init_state):
-        idx = approach.state_to_idx(init_state)
-        state = approach.idx_to_state(idx)
-        assert state.x == init_state.x and state.v == init_state.v
-
-    def test_state_space_flat_size(self, approach):
-        ss_flat_size = approach.state_space_shape[0] * approach.state_space_shape[1]
-        assert approach.state_space_flat_size == ss_flat_size
+    def test_state_to_indices_to_state(self, approach, init_state):
+        indices = approach.state_to_indices(init_state)
+        new_state = approach.indices_to_state(indices)
+        assert new_state == init_state
 
     def test_build_adjacency_matrix(self, approach):
         approach.build_adjacency_matrix()

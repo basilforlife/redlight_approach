@@ -5,8 +5,10 @@
 
 
 # IMPORTS
-import numpy as np
+from itertools import product
 from math import floor, ceil
+import numpy as np
+
 
 # This fn rounds things to the nearest discrete step
 # TODO: this could take a fn as argument instead of behavior str
@@ -33,7 +35,6 @@ class Distribution:
         self.dist[-num_full_timesteps:] = support
 
 
-# TODO enforce discretization when making states
 # State class holds a vehicle state
 class State:
     def __init__(self, pos, vel, bounds=None):
@@ -43,14 +44,20 @@ class State:
             self.check_bounds(bounds)
 
     def check_bounds(self, bounds):
-        if self.x <= bounds[0] or \
-           self.x >= bounds[1] or \
-           self.v <= bounds[2] or \
-           self.v >= bounds[3]:
+        if self.x < bounds[0] or \
+           self.x > bounds[1] or \
+           self.v < bounds[2] or \
+           self.v > bounds[3]:
             raise IndexError('State does not lie within state space')
 
     def __repr__(self):
         return f'State object: x = {self.x}; v = {self.v}'
+
+    def __eq__(self, s):
+        if isinstance(s, State):
+            return s.x == self.x and s.v == self.v
+        else:
+            return False
 
 
 # Approach Class implements the algorithm
@@ -105,29 +112,26 @@ class Approach:
         # Use abs() because x is negative
         num_x_steps = int(abs(self.x_max - self.x_min) / self.x_step) + 1
         self.state_space_shape = (num_x_steps, num_v_steps)
-        self.state_space_flat_size = num_x_steps * num_v_steps
         self.state_space_bounds = [self.x_min, self.x_max, self.v_min, self.v_max]
 
-    # Convert state object to index
-    # Args:
-    #     state: State object to find idx of
-    # Returns:
-    #     idx: int representing state location in flattened state space
-    def state_to_idx(self, state):
+    # Discretize state to position and velocity steps
+    def discretize_state(self, state):
+        new_x = round_to_step(state.x, self.x_step)
+        new_v = round_to_step(state.v, self.v_step)
+        
+        # Use a new State object so that boundaries get checked
+        return State(new_x, new_v)
 
-        # This equation gives a bijection from state to index
-        idx = int(self.state_space_shape[1] * state.v / self.v_step - state.x / self.x_step) # x is negative
-        return idx
+    # Convert state to indices in a state space shaped matrix
+    def state_to_indices(self, state):
+        state = self.discretize_state(state)
+        return (int(state.x / self.x_step * -1), int(state.v / self.v_step))
 
-    # Convert index to state object
-    # Args:
-    #     idx: int representing state location in flattened state space
-    # Returns:
-    #     state: State object corresponding to idx
-    def idx_to_state(self, idx):
-        x = int((idx % self.state_space_shape[1]) / self.x_step) * -1 # x is negative
-        v = idx // int(self.state_space_shape[1] / self.v_step)
-        return State(x, v)
+    # Convert indices(x,v) to state
+    def indices_to_state(self, indices):
+        return State(indices[0] * self.x_step * -1, indices[1] * self.v_step, self.state_space_bounds)
+      
+        
 
     # This fn builds a state adjacency matrix
     # where the rows are states at t=k, and the columns are states at t=k+1
@@ -139,14 +143,14 @@ class Approach:
     def build_adjacency_matrix(self):
 
         # Init boolean array
-        ss_flat_size = self.state_space_flat_size
-        self.adj_matrix = np.zeros((ss_flat_size, ss_flat_size), dtype=np.bool_) 
+        ss_size = self.state_space_shape
+        self.adj_matrix = np.zeros((ss_size * 2), dtype=np.bool_) 
 
         # Iterate over all starting states
-        # Maybe we can use itertools to iterate over state without using flattened state space
-        for i in range(ss_flat_size):
-            state = self.idx_to_state(i)
-            v_min, v_max = state.v - self.a_max, state.v + self.a_max # min, max of reachable states
+        for i, j in product(range(ss_size[0]), range(ss_size[1])):
+            state = self.indices_to_state((i, j))
+            a_increment = self.a_max * self.t_step # max acceleration that can occur in a timestep
+            v_min, v_max = state.v - a_increment, state.v + a_increment # min, max of reachable states
             v_min_discrete = round_to_step(v_min, self.v_step, behavior='ceil')
             v_max_discrete = round_to_step(v_max, self.v_step, behavior='floor')
 
@@ -156,7 +160,7 @@ class Approach:
                 # Compute new position 
                 # (this linear approx is okay because it gets better as timestep gets smaller)
                 v_avg = (state.v + v_new)/2 # avg velocity over timestep
-                x_new = state.x - v_avg * self.t_step # change in position over timestep
+                x_new = state.x + v_avg * self.t_step # change in position over timestep
                 x_new_discrete = round_to_step(x_new, self.x_step)
 
                 # Set relevant element of adjacency matrix to True
@@ -165,7 +169,8 @@ class Approach:
                 except IndexError: # If the state is out of bounds
                     pass
                 else:
-                    self.adj_matrix[i, self.state_to_idx(new_state)] = True # set appropriate edge to True
+                    i_new, j_new = self.state_to_indices(new_state)
+                    self.adj_matrix[i, j, i_new, j_new] = True # set appropriate edge to True
 
     # rho() gives the value of a state at a point in time, if the event G has already occurred.
     # It reflects the position at t_eval if the vehicle accelerates at a_max until reaching v_max.
@@ -175,7 +180,7 @@ class Approach:
     # Returns: 
     #     the value of a state if event G occurs at the passed time
     def rho(self, state, delta_t):
-        x, v = state
+        x, v = state.x, state.v
 
         # Derivation shown in notes from 4/3/2020
         result = x + self.v_max * delta_t - 1/2 * 1/self.a_max * (self.v_max - v)**2
