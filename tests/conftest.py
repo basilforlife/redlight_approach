@@ -49,4 +49,8 @@ def t_eval():
 def init_state():
     return State(pos=test1['init_conditions']['x_start'],
                  vel=test1['init_conditions']['v_start'])
+
+@pytest.fixture
+def ran_red_state():
+    return State(1, 10)
      

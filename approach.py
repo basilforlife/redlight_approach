@@ -176,17 +176,20 @@ class Approach:
     # It reflects the position at t_eval if the vehicle accelerates at a_max until reaching v_max.
     # Args:
     #     state: a State object containing the position and velocity
-    #     delta_t: the difference between t_eval and the current time
+    #     timestep: 
     # Returns: 
     #     the value of a state if event G occurs at the passed time
-    def rho(self, state, delta_t):
+    # TODO timestep does not map to seconds. Fix this with indx to clock time conversions like state space variables
+    def rho(self, state, timestep):
         x, v = state.x, state.v
+        # delta_t: the difference between t_eval and the current time
+        delta_t = self.t_eval - timestep 
 
         # Derivation shown in notes from 4/3/2020
         result = x + self.v_max * delta_t - 1/2 * 1/self.a_max * (self.v_max - v)**2
 
         # Check if you ran the red light
-        if pos > 0: result = -999999999 # very bad value
+        if x > 0: result = -999999999 # very bad value
         
         return result
 
@@ -197,24 +200,28 @@ class Approach:
     #     timestep: algorithm timestep from which to look 
     # Returns: 
     #     tuple: (value of max reachable state, index of max reachable state)
-    def find_max_next_state(self, idx, timestep):
-        reachable_mask = self.adj_matrix[idx] # relevant row of adj_matrix
-        next_state_vals = self.I[timestep-1] # next timestep values of states
+    def find_max_next_state(self, state_indices, timestep):
+        reachable_mask = self.adj_matrix[state_indices[0], state_indices[1]] # relevant slice of adj_matrix
+        next_state_vals = np.zeros(self.state_space_shape)
+        for i, j in product(range(self.state_space_shape[0]), range(self.state_space_shape[1])):
+            next_state_vals[i, j] = self.I[timestep+1, i, j, 0]
         reachable_vals = reachable_mask * next_state_vals 
         max_reachable = np.max(reachable_vals)
-        argmax_reachable = np.argmax(reachable_vals)
+        argmax_reachable = np.argmax(reachable_vals) #This stores the index raveled. Use np.unravel_index() to rectify
         return (max_reachable, argmax_reachable) 
 
-    #TODO double check time variables 
-    # delta_t is t_eval-t_current! Or the amount of time until t_eval.
-    def calc_I(self, idx, timestep):
+    def calc_I(self, state_indices, timestep):
 
         # alpha is the probability of event G occurring right now
         alpha = self.green_dist.dist[timestep]
-        max_reachable, argmax_reachable = self.find_max_next_state(idx, timestep)
+        if timestep != self.num_timesteps -1:
+            max_reachable, argmax_reachable = self.find_max_next_state(state_indices, timestep)
+        else:
+            max_reachable = 0
+            argmax_reachable = 0 # This should never get used in the forward pass
 
         # weighted value if light turns green right now
-        cash_in_component = alpha * self.rho(self.idx_to_state(idx), timestep)
+        cash_in_component = alpha * self.rho(self.indices_to_state(state_indices), timestep)
 
         # weighted expected value if light does not turn green right now
         not_cash_in_component = (1 - alpha) * max_reachable
@@ -231,25 +238,62 @@ class Approach:
     # depend on the later states' values
     def backward_pass(self):
 
+        ss_shape = self.state_space_shape
+
         # calculate number of timesteps
-        num_timesteps = len(self.green_dist.dist) # This should work out to be the number of timesteps from 0 to last_support
+        self.num_timesteps = len(self.green_dist.dist) # This should work out to be the number of timesteps from 0 to last_support
 
         # Initialize I to timesteps x statespace size
-        self.I = np.zeros((num_timesteps, self.state_space_flat_size))
+        # Last dimension stores I and pointer to next state: [I, pointer_index]
+        self.I = np.zeros((self.num_timesteps, ss_shape[0], ss_shape[1], 2))
 
         # Iterate through all timesteps to fill out I
         # This progresses backwards in clock time through I, which has rows in reverse chronological order
-        for I_row, timestep in enumerate(range(num_timesteps - 1, -1, -1)):
+        for timestep in range(self.num_timesteps - 1, -1, -1):
 
             # Iterate through all states 
-            for idx in range(self.state_space_flat_size):
-                self.I[I_row, idx] = self.calc_I(idx, timestep)
+            for i, j in product(range(ss_shape[0]), range(ss_shape[1])):
+                self.I[timestep, i, j] = self.calc_I((i, j), timestep)
                  
-             
-
-
     # This fn can be run after I is defined everywhere from backward_pass().
     # it takes a path through the state space over time, and the result of 
     # this function is the desired behavior
     def forward_pass(self):
-        pass
+
+        # Initial state indices
+        i, j = self.state_to_indices(self.initial_state)
+
+        # Initialize list to store path through state space
+        state_list = [self.initial_state]
+
+        # Iterate forward through timesteps
+        next_indices_raveled = int(self.I[0, i, j, 1]) # first one
+        for timestep in range(1, self.num_timesteps):
+            next_state_indices = np.unravel_index(next_indices_raveled, self.state_space_shape) 
+            next_state = self.indices_to_state(next_state_indices)
+            state_list.append(next_state)
+            i, j = next_state_indices
+            next_indices_raveled = int(self.I[timestep, i, j, 1])
+
+        return state_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

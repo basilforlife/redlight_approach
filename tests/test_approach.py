@@ -27,7 +27,6 @@ class TestApproach:
         new_state = approach.indices_to_state(indices)
         assert new_state == init_state
 
-    def test_build_adjacency_matrix(self, approach):
-        approach.build_adjacency_matrix()
-        assert True
+    def test_rho_red_light_check(self, approach, ran_red_state):
+        assert approach.rho(ran_red_state,10) == -999999999
 
