@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2021-07-12 17:31:26 by Eclipse SUMO GUI Version 1.9.2
+-->
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.net.xml"/>
+        <route-files value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.rou.xml"/>
+    </input>
+
+    <report>
+        <verbose value="true"/>
+        <duration-log.statistics value="true"/>
+        <no-step-log value="true"/>
+    </report>
+
+</configuration>
