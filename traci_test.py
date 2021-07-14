@@ -8,6 +8,7 @@ import traci.constants as tc
 
 # Set up argparse
 parser = argparse.ArgumentParser(description='Run a SUMO simulation')
+parser.add_argument('path_to_sumocfg', type=str, help='relative or absolute path to .sumocfg file to run')
 parser.add_argument('-g', '--gui', action='store_true', help='Run the simulation in sumo-gui. Default is to run in sumo') 
 args = parser.parse_args()
 
@@ -23,7 +24,7 @@ if args.gui:
     sumoBinary = '/usr/local/bin/sumo-gui' # Use graphical simulator
 else:
     sumoBinary = '/usr/local/bin/sumo' # Use command line only simulator
-sumoCmd = [sumoBinary, '-c', 'sumo/simple_traffic_light/simple_traffic_light.sumocfg']
+sumoCmd = [sumoBinary, '-c', args.path_to_sumocfg]
 
 # Enter traci context
 traci.start(sumoCmd)
