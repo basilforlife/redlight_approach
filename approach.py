@@ -132,6 +132,17 @@ class Approach:
         return State(indices[0] * self.x_step * -1, indices[1] * self.v_step, self.state_space_bounds)
       
         
+    # Calculate new vehicle position
+    # mode refers to Riemann integration mode
+    def delta_x(self, state, v_new, mode='trapezoidal'):
+        if mode == 'trapezoidal':
+           v_avg = (state.v + v_new)/2
+           x_new = state.x + v_avg * self.t_step
+           x_new_discrete = round_to_step(x_new, self.x_step)
+        if mode == 'right':
+           x_new = state.x + v_new * self.t_step
+           x_new_discrete = round_to_step(x_new, self.x_step)
+        return x_new_discrete
 
     # This fn builds a state adjacency matrix
     # where the rows are states at t=k, and the columns are states at t=k+1
@@ -158,10 +169,7 @@ class Approach:
             for v_new in np.arange(v_min_discrete, v_max_discrete, self.v_step): 
 
                 # Compute new position 
-                # (this linear approx is okay because it gets better as timestep gets smaller)
-                v_avg = (state.v + v_new)/2 # avg velocity over timestep
-                x_new = state.x + v_avg * self.t_step # change in position over timestep
-                x_new_discrete = round_to_step(x_new, self.x_step)
+                x_new_discrete = self.delta_x(state, v_new, mode='right')
 
                 # Set relevant element of adjacency matrix to True
                 try:
