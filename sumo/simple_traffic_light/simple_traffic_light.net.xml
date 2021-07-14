@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2021-07-12 17:50:52 by Eclipse SUMO netedit Version 1.9.2
+<!-- generated on 2021-07-14 17:28:56 by Eclipse SUMO netedit Version 1.9.2
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <sumo-net-file value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.net.xml"/>
+        <sumo-net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.net.xml"/>
     </input>
 
     <output>
-        <output-file value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.net.xml"/>
+        <output-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.net.xml"/>
     </output>
 
     <processing>
@@ -38,7 +38,7 @@
 
 <net version="1.9" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
 
-    <location netOffset="0.00,0.00" convBoundary="-100.00,50.00,100.00,50.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+    <location netOffset="0.00,0.00" convBoundary="-200.00,50.00,100.00,50.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
 
     <edge id=":2_0" function="internal">
         <lane id=":2_0_0" index="0" speed="13.89" length="0.10" shape="0.00,45.20 0.00,45.20"/>
@@ -46,8 +46,8 @@
     </edge>
 
     <edge id="gneE0" from="1" to="2" priority="-1">
-        <lane id="gneE0_0" index="0" speed="13.89" length="100.00" shape="-100.00,45.20 0.00,45.20"/>
-        <lane id="gneE0_1" index="1" speed="13.89" length="100.00" shape="-100.00,48.40 0.00,48.40"/>
+        <lane id="gneE0_0" index="0" speed="13.89" length="200.00" shape="-200.00,45.20 0.00,45.20"/>
+        <lane id="gneE0_1" index="1" speed="13.89" length="200.00" shape="-200.00,48.40 0.00,48.40"/>
     </edge>
     <edge id="gneE1" from="2" to="3" priority="-1">
         <lane id="gneE1_0" index="0" speed="13.89" length="100.00" shape="0.00,45.20 100.00,45.20"/>
@@ -57,10 +57,10 @@
     <tlLogic id="2" type="static" programID="0" offset="0">
         <phase duration="20" state="GG"/>
         <phase duration="3"  state="yy"/>
-        <phase duration="10"  state="rr"/>
+        <phase duration="10" state="rr"/>
     </tlLogic>
 
-    <junction id="1" type="dead_end" x="-100.00" y="50.00" incLanes="" intLanes="" shape="-100.00,50.00 -100.00,43.60"/>
+    <junction id="1" type="dead_end" x="-200.00" y="50.00" incLanes="" intLanes="" shape="-200.00,50.00 -200.00,43.60"/>
     <junction id="2" type="traffic_light" x="0.00" y="50.00" incLanes="gneE0_0 gneE0_1" intLanes=":2_0_0 :2_0_1" shape="0.00,50.00 0.00,43.60 0.00,50.00">
         <request index="0" response="00" foes="00" cont="0"/>
         <request index="1" response="00" foes="00" cont="0"/>

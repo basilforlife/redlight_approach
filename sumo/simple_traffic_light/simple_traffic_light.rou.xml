@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2021-07-12 17:51:24 by Eclipse SUMO netedit Version 1.9.2
+<!-- generated on 2021-07-14 17:29:46 by Eclipse SUMO netedit Version 1.9.2
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <sumo-net-file value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.net.xml"/>
+        <sumo-net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.net.xml"/>
     </input>
 
     <output>
-        <output-file value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.net.xml"/>
+        <output-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.net.xml"/>
     </output>
 
     <processing>
@@ -30,7 +30,7 @@
     </pedestrian>
 
     <netedit>
-        <route-files value="/Users/jonathanroy/Projects/sumo_Red_Light_Approach/simple_traffic_light.rou.xml"/>
+        <route-files value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.rou.xml"/>
     </netedit>
 
     <report>
