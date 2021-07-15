@@ -6,6 +6,7 @@
 
 # IMPORTS
 from itertools import product
+import json
 from math import floor, ceil
 import numpy as np
 
@@ -19,10 +20,13 @@ from utils import round_to_step
 # Approach Class implements the algorithm
 class Approach:
 
-    def __init__(self):
+    def __init__(self, json_path=None):
         # General params that are immutable
         self.v_min = 0 # obvious since cars don't back up
         self.x_max = 0 # value of x at stoplight
+
+        if json_path:
+            self.configure(json_path)
 
     # Set the parameters used for computation
     def set_compute_params(self, x_step, v_step, t_step):
@@ -70,6 +74,22 @@ class Approach:
         self.state_space_shape = (num_x_steps, num_v_steps)
         self.state_space_bounds = [self.x_min, self.x_max, self.v_min, self.v_max]
 
+    # this fn takes a json file and configures all the stuff
+    # Includes parameters, initial conditions, and trivial consequences of these
+    def configure(self, json_path):
+        with open(json_path) as f:
+             test1 = json.load(f)
+        self.set_compute_params(x_step=test1['compute_params']['x_step'],
+                                v_step=test1['compute_params']['v_step'],
+                                t_step=test1['compute_params']['t_step'])
+        self.set_world_params(v_max=test1['world_params']['v_max'],
+                              a_max=test1['world_params']['a_max'])
+        self.set_traffic_light_params(first_support=test1['traffic_light_params']['first_support'],
+                                      last_support=test1['traffic_light_params']['last_support'])
+        self.set_init_conditions(x_start=test1['init_conditions']['x_start'],
+                                 v_start=test1['init_conditions']['v_start'])
+        self.compute_state_space_shape()
+
     # Discretize state to position and velocity steps
     def discretize_state(self, state):
         new_x = round_to_step(state.x, self.x_step)
@@ -86,7 +106,6 @@ class Approach:
     # Convert indices(x,v) to state
     def indices_to_state(self, indices):
         return State(indices[0] * self.x_step * -1, indices[1] * self.v_step, self.state_space_bounds)
-      
         
     # Calculate new vehicle position
     # mode refers to Riemann integration mode
@@ -223,6 +242,19 @@ class Approach:
             bar.next()
         bar.finish()
                  
+    # This fn takes one step in time forward through I
+    def forward_step(self, state, timestep):
+        
+        # Initial state indices
+        i, j = self.state_to_indices(state)
+
+        # Iterate forward through timesteps
+        next_indices_raveled = int(self.I[timestep, i, j, 1])
+        next_state_indices = np.unravel_index(next_indices_raveled, self.state_space_shape) 
+        next_state = self.indices_to_state(next_state_indices)
+
+        return (next_state, next_state_indices)
+
     # This fn can be run after I is defined everywhere from backward_pass().
     # it takes a path through the state space over time, and the result of 
     # this function is the desired behavior
@@ -239,19 +271,6 @@ class Approach:
             state_list.append(current_state)
 
         return state_list
-
-    # This fn takes one step in time forward through I
-    def forward_step(self, state, timestep):
-        
-        # Initial state indices
-        i, j = self.state_to_indices(state)
-
-        # Iterate forward through timesteps
-        next_indices_raveled = int(self.I[timestep, i, j, 1])
-        next_state_indices = np.unravel_index(next_indices_raveled, self.state_space_shape) 
-        next_state = self.indices_to_state(next_state_indices)
-
-        return (next_state, next_state_indices)
 
 
 

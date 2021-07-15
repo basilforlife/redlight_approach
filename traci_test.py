@@ -5,6 +5,8 @@ import argparse
 import traci
 import traci.constants as tc
 
+from Red_Light_Approach.sumo_utils import add_sumo_path
+
 
 # Set up argparse
 parser = argparse.ArgumentParser(description='Run a SUMO simulation')
@@ -12,12 +14,8 @@ parser.add_argument('path_to_sumocfg', type=str, help='relative or absolute path
 parser.add_argument('-g', '--gui', action='store_true', help='Run the simulation in sumo-gui. Default is to run in sumo') 
 args = parser.parse_args()
 
-# Ensure sumo is on the python load path
-if 'SUMO_HOME' in os.environ:
-    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
-    sys.path.append(tools)
-else:
-    sys.exit("please declare environment variable 'SUMO_HOME'")
+# Ensure sumo is on the system path
+add_sumo_path()
 
 # Set up sumo interfacing
 if args.gui:
