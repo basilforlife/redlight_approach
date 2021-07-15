@@ -43,4 +43,5 @@
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
     <route edges="gneE0 gneE1" color="blue" id="route_0"/>
     <vehicle id="vehicle_0" depart="0.00" color="158,226,127" route="route_0"/>
+    <vehicle id="vehicle_1" depart="0.00" color="158,226,127" route="route_0" departLane="1"/>
 </routes>
