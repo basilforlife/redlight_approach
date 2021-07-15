@@ -9,6 +9,8 @@ from itertools import product
 from math import floor, ceil
 import numpy as np
 
+from progress.bar import IncrementalBar
+
 from distribution import Distribution
 from state import State
 from utils import round_to_step
@@ -211,36 +213,45 @@ class Approach:
 
         # Iterate through all timesteps to fill out I
         # This progresses backwards in clock time through I, which has rows in reverse chronological order
+        bar = IncrementalBar('Calculating I', max=self.num_timesteps)
         for timestep in range(self.num_timesteps - 1, -1, -1):
 
             # Iterate through all states 
             for i, j in product(range(ss_shape[0]), range(ss_shape[1])):
                 self.I[timestep, i, j] = self.calc_I((i, j), timestep)
+
+            bar.next()
+        bar.finish()
                  
     # This fn can be run after I is defined everywhere from backward_pass().
     # it takes a path through the state space over time, and the result of 
     # this function is the desired behavior
     def forward_pass(self):
 
-        # Initial state indices
-        i, j = self.state_to_indices(self.initial_state)
-
         # Initialize list to store path through state space
         state_list = [self.initial_state]
 
         # Iterate forward through timesteps
-        next_indices_raveled = int(self.I[0, i, j, 1]) # first one
+        current_state = self.initial_state
         for timestep in range(1, self.num_timesteps):
-            next_state_indices = np.unravel_index(next_indices_raveled, self.state_space_shape) 
-            next_state = self.indices_to_state(next_state_indices)
-            state_list.append(next_state)
-            i, j = next_state_indices
-            next_indices_raveled = int(self.I[timestep, i, j, 1])
+            next_state, _ = self.forward_step(current_state, timestep)
+            current_state = next_state
+            state_list.append(current_state)
 
         return state_list
 
+    # This fn takes one step in time forward through I
+    def forward_step(self, state, timestep):
+        
+        # Initial state indices
+        i, j = self.state_to_indices(state)
 
+        # Iterate forward through timesteps
+        next_indices_raveled = int(self.I[timestep, i, j, 1])
+        next_state_indices = np.unravel_index(next_indices_raveled, self.state_space_shape) 
+        next_state = self.indices_to_state(next_state_indices)
 
+        return (next_state, next_state_indices)
 
 
 
