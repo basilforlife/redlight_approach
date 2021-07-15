@@ -9,55 +9,9 @@ from itertools import product
 from math import floor, ceil
 import numpy as np
 
-
-# This fn rounds things to the nearest discrete step
-# TODO: this could take a fn as argument instead of behavior str
-def round_to_step(value, step_size, behavior='round'):
-    if behavior == 'round':
-        result = round(value / step_size) * step_size 
-    if behavior == 'floor':
-        result = floor(value / step_size) * step_size 
-    if behavior == 'ceil':
-        result = ceil(value / step_size) * step_size 
-    return result
-
-# Dist class holds a distribution representing the green light event
-class Distribution:
-    def __init__(self):
-        self.dist = None 
-
-    # Times are with reference to current time
-    def uniform_dist(self, first_support, last_support, t_step):
-        num_full_timesteps = floor((last_support - first_support)/t_step)
-        num_timesteps = floor(last_support/t_step)
-        self.dist = np.zeros(num_timesteps)
-        support = np.ones(num_full_timesteps)/num_full_timesteps
-        self.dist[-num_full_timesteps:] = support
-
-
-# State class holds a vehicle state
-class State:
-    def __init__(self, pos, vel, bounds=None):
-        self.x = pos
-        self.v = vel
-        if bounds:
-            self.check_bounds(bounds)
-
-    def check_bounds(self, bounds):
-        if self.x < bounds[0] or \
-           self.x > bounds[1] or \
-           self.v < bounds[2] or \
-           self.v > bounds[3]:
-            raise IndexError('State does not lie within state space')
-
-    def __repr__(self):
-        return f'State object: x = {self.x}; v = {self.v}'
-
-    def __eq__(self, s):
-        if isinstance(s, State):
-            return s.x == self.x and s.v == self.v
-        else:
-            return False
+from distribution import Distribution
+from state import State
+from utils import round_to_step
 
 
 # Approach Class implements the algorithm
