@@ -57,8 +57,9 @@ while step < 50:
     if begin_approach:
         next_state, _ = approach.forward_step(state, approach_timestep)
         traci.vehicle.setSpeed('vehicle_0', next_state.v)
-        print('Approach modified speed')
+        print(f'Approach modified speed: timestep = {approach_timestep}')
         print(f'next_state = {next_state}')
+        approach_timestep += 1
        
     step += 1
 

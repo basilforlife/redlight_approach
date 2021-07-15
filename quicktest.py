@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from Red_Light_Approach.approach import Approach
+from Red_Light_Approach.state import State 
 
 
 # Load test case parameters

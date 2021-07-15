@@ -171,8 +171,10 @@ class Approach:
         # Derivation shown in notes from 4/3/2020
         result = x + self.v_max * delta_t - 1/2 * 1/self.a_max * (self.v_max - v)**2
 
-        # Check if you ran the red light
-        if x > 0: result = -999999999 # very bad value
+        # Check if you will run the red light at next timestep
+        v_next_min = max((state.v - self.a_max * self.t_step), self.v_min) # maxed with v_min to avoid negative velocity
+        x_next_min = x + self.delta_x(state, v_next_min, mode='trapezoidal')
+        if x_next_min > 0: result = -999999999 # very bad value
         
         return result
 
