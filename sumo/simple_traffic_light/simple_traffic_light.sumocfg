@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2021-07-12 17:31:26 by Eclipse SUMO GUI Version 1.9.2
+<!-- generated on 2021-07-16 17:18:01 by Eclipse SUMO GUI Version 1.9.2
 -->
 
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
@@ -14,10 +14,11 @@
         <verbose value="true"/>
         <duration-log.statistics value="true"/>
         <no-step-log value="true"/>
+        <tripinfo-output value="tripinfo.xml"/>
     </report>
 
-    <viewsettings>
-        <delay value="300"/>
-    </viewsettings>
+    <gui_only>
+        <delay value="250"/>
+    </gui_only>
 
 </configuration>
