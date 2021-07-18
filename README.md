@@ -13,7 +13,9 @@ Use homebrew to install SUMO:\
 ```brew tap dlr-ts/sumo```\
 ```brew install sumo```\
 Add SUMO_PATH environment variable in your ```.bashrc``` or ```.zshrc```:\
-```export SUMO_PATH=/path/to/sumo```\
+```export SUMO_HOME=/path/to/sumo```\
+Also add to this file the parent dir of project to PYTHONPATH:\
+```export PYTHONPATH:$PYTHONPATH:/path/to/parent/```\
 Change paths in .sumocfg:\
 ```Do stuff so its not personal info```\
 Start XQuartz application from spotlight search or something\
