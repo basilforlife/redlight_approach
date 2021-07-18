@@ -19,8 +19,16 @@ dependencies:
   - xz=5.2.5=h1de35cc_0
   - zlib=1.2.11=h1de35cc_3
   - pip:
+    - attrs==21.2.0
+    - iniconfig==1.1.1
     - numpy==1.21.1
+    - packaging==21.0
+    - pluggy==0.13.1
     - progress==1.5
+    - py==1.10.0
+    - pyparsing==2.4.7
+    - pytest==6.2.4
     - sumolib==1.9.2
+    - toml==0.10.2
     - traci==1.9.2
 prefix: /Users/Cindi/miniconda3/envs/RLA
