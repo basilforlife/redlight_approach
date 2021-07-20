@@ -9,6 +9,10 @@
         <net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/f.net.xml"/>
         <route-files value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/f.rou.xml"/>
     </input>
+ 
+    <processing>
+        <step-method.ballistic value="true"/>
+    </processing>
 
     <report>
         <verbose value="true"/>

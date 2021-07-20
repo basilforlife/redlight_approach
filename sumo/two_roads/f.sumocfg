@@ -10,6 +10,10 @@
         <route-files value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/two_roads/f.rou.xml"/>
     </input>
 
+    <processing>
+        <step-method.ballistic value="true"/>
+    </processing>
+
     <report>
         <verbose value="true"/>
         <duration-log.statistics value="true"/>

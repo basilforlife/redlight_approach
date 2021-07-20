@@ -144,7 +144,7 @@ class Approach:
             for v_new in np.arange(v_min_discrete, v_max_discrete, self.v_step): 
 
                 # Compute new position 
-                x_new_discrete = self.delta_x(state, v_new, mode='right')
+                x_new_discrete = self.delta_x(state, v_new, mode='trapezoidal')
 
                 # Set relevant element of adjacency matrix to True
                 try:
