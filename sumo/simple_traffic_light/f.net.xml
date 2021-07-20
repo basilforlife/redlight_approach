@@ -54,7 +54,7 @@
         <lane id="gneE1_1" index="1" speed="18.00" length="200.00" shape="0.00,48.40 200.00,48.40"/>
     </edge>
 
-    <tlLogic id="2" type="static" programID="0" offset="0">
+    <tlLogic id="0" type="static" programID="0" offset="0">
         <phase duration="20" state="GG"/>
         <phase duration="3"  state="yy"/>
         <phase duration="10" state="rr"/>
@@ -67,8 +67,8 @@
     </junction>
     <junction id="3" type="dead_end" x="200.00" y="50.00" incLanes="gneE1_0 gneE1_1" intLanes="" shape="200.00,43.60 200.00,50.00"/>
 
-    <connection from="gneE0" to="gneE1" fromLane="0" toLane="0" via=":2_0_0" tl="2" linkIndex="0" dir="s" state="O"/>
-    <connection from="gneE0" to="gneE1" fromLane="1" toLane="1" via=":2_0_1" tl="2" linkIndex="1" dir="s" state="O"/>
+    <connection from="gneE0" to="gneE1" fromLane="0" toLane="0" via=":2_0_0" tl="0" linkIndex="0" dir="s" state="O"/>
+    <connection from="gneE0" to="gneE1" fromLane="1" toLane="1" via=":2_0_1" tl="0" linkIndex="1" dir="s" state="O"/>
 
     <connection from=":2_0" to="gneE1" fromLane="0" toLane="0" dir="s" state="M"/>
     <connection from=":2_0" to="gneE1" fromLane="1" toLane="1" dir="s" state="M"/>

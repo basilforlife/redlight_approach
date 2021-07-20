@@ -14,10 +14,11 @@ from Red_Light_Approach.sumo_utils import add_sumo_path
 
 # this fn gets random time and sets the light to red for that long
 def set_red_light_random():
-    red_duration = uniform(0, 10) + 15.5 # random value plus a constant 
-    traci.trafficlight.setPhase('2', 2) # set traffic light id=2 to red
-    traci.trafficlight.setPhaseDuration('2', red_duration)
+    red_duration = uniform(0, 10) + 15.228# random value plus a constant 
+    traci.trafficlight.setPhase('0', 2) # set traffic light id=2 to red
+    traci.trafficlight.setPhaseDuration('0', red_duration)
     print(f'Red light duration = {red_duration}')
+    return red_duration
 
 # This fn puts a vehicle in the left lane permanently
 def set_lane_change_static(vehicle_ID):
@@ -62,32 +63,32 @@ if args.unpickle:
 # Enter traci context
 traci.start(sumoCmd)
 traci.vehicle.subscribe('vehicle_0', (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS))
-set_red_light_random()
-set_lane_change_static('vehicle_1')
-set_lane_change_static('vehicle_0')
+traci.vehicle.subscribe('vehicle_1', (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS))
+red_duration = set_red_light_random()
 step = 0
-print(f'traci simulation step size: {traci.simulation.getDeltaT()}')
 begin_approach = False
 end_approach = False
 approach_timestep = 0
 while step < 50:
-    traci.simulationStep()
     print('step', step)
     sub_results = traci.vehicle.getSubscriptionResults('vehicle_0')
+    sub_results_1 = traci.vehicle.getSubscriptionResults('vehicle_1')
 
     # check that traffic light is ahead (that next_TLS result is full)
     next_TLS = sub_results[112]
+    green_light = red_duration < step + 1# This is true if light is green (safer?)
     if next_TLS: # if traffic light ahead
         # TODO make state check boundaries to ensure state is within state space
         state = State(next_TLS[0][2] * -1, sub_results[64])
-        print(f'state = {state}')
-        green_light = (next_TLS[0][3] == 'G') # This is true if light is green
         print(f'green_light = {green_light}')
 
-    # Begin approach at 100m when we can "see" it
-    if state.x >= -100 and not begin_approach:
-        begin_approach = True
-        traci.vehicle.setColor('vehicle_0', (246,186,34)) # Change color when approach starts
+        # Begin approach at 100m when we can "see" it
+        if state.x >= -100 and not begin_approach:
+            begin_approach = True
+            traci.vehicle.setColor('vehicle_0', (246,186,34)) # Change color when approach starts
+
+    print(sub_results)
+    print(sub_results_1)
 
     # End approach if it has started and the light is now green
     if begin_approach and green_light:
@@ -98,10 +99,10 @@ while step < 50:
     if begin_approach and not end_approach:
         next_state, _ = approach.forward_step(state, approach_timestep)
         traci.vehicle.setSpeed('vehicle_0', next_state.v)
-        print(f'Approach modified speed: timestep = {approach_timestep}')
         print(f'next_state = {next_state}')
         approach_timestep += 1
        
+    traci.simulationStep()
     step += 1
 
 # Exit traci context

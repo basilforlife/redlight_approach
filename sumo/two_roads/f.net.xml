@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2021-07-20 12:55:53 by Eclipse SUMO netedit Version 1.9.2
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/two_roads/f.net.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/two_roads/f.net.xml"/>
+    </output>
+
+    <processing>
+        <geometry.min-radius.fix.railways value="false"/>
+        <geometry.max-grade.fix value="false"/>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="false"/>
+    </processing>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.corner-detail value="5"/>
+        <junctions.limit-turn-speed value="5.5"/>
+        <rectangular-lane-cut value="false"/>
+    </junctions>
+
+    <pedestrian>
+        <walkingareas value="false"/>
+    </pedestrian>
+
+    <report>
+        <aggregate-warnings value="5"/>
+    </report>
+
+</configuration>
+-->
+
+<net version="1.9" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="0.00,0.00" convBoundary="-200.00,30.00,200.00,50.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+
+    <edge id=":r0_1_0" function="internal">
+        <lane id=":r0_1_0_0" index="0" speed="18.00" length="0.10" shape="0.00,48.40 0.00,48.40"/>
+    </edge>
+    <edge id=":r1_1_0" function="internal">
+        <lane id=":r1_1_0_0" index="0" speed="18.00" length="0.10" shape="0.00,28.40 0.00,28.40"/>
+    </edge>
+
+    <edge id="gneE0" from="r0_0" to="r0_1" priority="-1">
+        <lane id="gneE0_0" index="0" speed="18.00" length="200.00" shape="-200.00,48.40 0.00,48.40"/>
+    </edge>
+    <edge id="gneE1" from="r0_1" to="r0_2" priority="-1">
+        <lane id="gneE1_0" index="0" speed="18.00" length="200.00" shape="0.00,48.40 200.00,48.40"/>
+    </edge>
+    <edge id="gneE2" from="r1_0" to="r1_1" priority="-1">
+        <lane id="gneE2_0" index="0" speed="18.00" length="200.00" shape="-200.00,28.40 0.00,28.40"/>
+    </edge>
+    <edge id="gneE3" from="r1_1" to="r1_2" priority="-1">
+        <lane id="gneE3_0" index="0" speed="18.00" length="200.00" shape="0.00,28.40 200.00,28.40"/>
+    </edge>
+
+    <tlLogic id="0" type="static" programID="0" offset="0">
+        <phase duration="2"  state="G"/>
+        <phase duration="4"  state="y"/>
+        <phase duration="5"  state="r"/>
+    </tlLogic>
+
+    <junction id="r0_0" type="dead_end" x="-200.00" y="50.00" incLanes="" intLanes="" shape="-200.00,50.00 -200.00,46.80"/>
+    <junction id="r0_1" type="traffic_light" x="0.00" y="50.00" incLanes="gneE0_0" intLanes=":r0_1_0_0" shape="0.00,50.00 0.00,46.80 0.00,50.00">
+        <request index="0" response="0" foes="0" cont="0"/>
+    </junction>
+    <junction id="r0_2" type="dead_end" x="200.00" y="50.00" incLanes="gneE1_0" intLanes="" shape="200.00,46.80 200.00,50.00"/>
+    <junction id="r1_0" type="dead_end" x="-200.00" y="30.00" incLanes="" intLanes="" shape="-200.00,30.00 -200.00,26.80"/>
+    <junction id="r1_1" type="traffic_light" x="0.00" y="30.00" incLanes="gneE2_0" intLanes=":r1_1_0_0" shape="0.00,30.00 0.00,26.80 0.00,30.00">
+        <request index="0" response="0" foes="0" cont="0"/>
+    </junction>
+    <junction id="r1_2" type="dead_end" x="200.00" y="30.00" incLanes="gneE3_0" intLanes="" shape="200.00,26.80 200.00,30.00"/>
+
+    <connection from="gneE0" to="gneE1" fromLane="0" toLane="0" via=":r0_1_0_0" tl="0" linkIndex="0" dir="s" state="O"/>
+    <connection from="gneE2" to="gneE3" fromLane="0" toLane="0" via=":r1_1_0_0" tl="0" linkIndex="0" dir="s" state="O"/>
+
+    <connection from=":r0_1_0" to="gneE1" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":r1_1_0" to="gneE3" fromLane="0" toLane="0" dir="s" state="M"/>
+
+</net>
