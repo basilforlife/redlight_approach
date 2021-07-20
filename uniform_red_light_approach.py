@@ -3,6 +3,7 @@ import os
 import pickle
 from random import uniform
 import sys
+import xml.etree.ElementTree as ET
 
 import traci
 import traci.constants as tc
@@ -10,6 +11,25 @@ import traci.constants as tc
 from Red_Light_Approach.approach import Approach
 from Red_Light_Approach.state import State 
 from Red_Light_Approach.sumo_utils import add_sumo_path
+
+
+# Do xml parsing to get timeloss results
+# Positive number represents approach having a beneficial effect
+def get_timeloss_diff(filepath):
+    timeloss_dict = get_timeloss_dict(filepath)
+    timeloss_vehicle_0 = timeloss_dict['vehicle_0']
+    timeloss_vehicle_1 = timeloss_dict['vehicle_1']
+    timeloss_diff = timeloss_vehicle_1 - timeloss_vehicle_0
+    return timeloss_diff
+
+def get_timeloss_dict(filepath):
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+    timeloss_dict = {}
+    for child in root:
+        timeloss_dict[child.attrib['id']] = float(child.attrib['timeLoss'])
+    return timeloss_dict
+   
 
 
 # this fn gets random time and sets the light to red for that long
@@ -74,9 +94,11 @@ while step < 50:
     sub_results = traci.vehicle.getSubscriptionResults('vehicle_0')
     sub_results_1 = traci.vehicle.getSubscriptionResults('vehicle_1')
 
+    if not sub_results and not sub_results_1:
+        break
     # check that traffic light is ahead (that next_TLS result is full)
     next_TLS = sub_results[112]
-    green_light = red_duration < step + 1# This is true if light is green (safer?)
+    green_light = red_duration < step + 1# This is true if light is green
     if next_TLS: # if traffic light ahead
         # TODO make state check boundaries to ensure state is within state space
         state = State(next_TLS[0][2] * -1, sub_results[64])
@@ -109,3 +131,6 @@ while step < 50:
 traci.close()
 
 
+# Report timeloss
+print(f'Red light duration = {red_duration}')
+print(f'Time Diff = {get_timeloss_diff("sumo/two_roads/tripinfo.xml")}s')
