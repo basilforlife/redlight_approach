@@ -273,21 +273,3 @@ class Approach:
             state_list.append(current_state)
 
         return state_list
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
