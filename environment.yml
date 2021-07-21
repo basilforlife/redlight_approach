@@ -31,4 +31,3 @@ dependencies:
     - sumolib==1.9.2
     - toml==0.10.2
     - traci==1.9.2
-prefix: /Users/Cindi/miniconda3/envs/RLA
