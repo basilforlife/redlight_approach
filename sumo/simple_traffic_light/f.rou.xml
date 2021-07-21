@@ -42,7 +42,7 @@
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
     <route edges="gneE0 gneE1" color="blue" id="route_0"/>
-    <vType id="type_0" accel="2.5" decel="2.5" color="0,226,127" speedDev="0" />
-    <vehicle id="vehicle_0" type="type_0" route="route_0" depart="0" departSpeed="18" departLane="0"/>
-    <vehicle id="vehicle_1" type="type_0" route="route_0" depart="0" departSpeed="18" departLane="1"/>
+    <vType id="type_0" speedFactor="normc(1.00,0.00)" color="0,226,127" accel="2.5" decel="2.5" emergencyDecel="2.5" sigma="0"/>
+    <vehicle id="vehicle_0" type="type_0" depart="0.00" departSpeed="18.00" departLane="0" route="route_0"/>
+    <vehicle id="vehicle_1" type="type_0" depart="0.00" departSpeed="18.00" departLane="1" route="route_0"/>
 </routes>

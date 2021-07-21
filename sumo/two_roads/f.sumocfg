@@ -6,9 +6,13 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.net.xml"/>
-        <route-files value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/simple_traffic_light.rou.xml"/>
+        <net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/two_roads/f.net.xml"/>
+        <route-files value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/two_roads/f.rou.xml"/>
     </input>
+
+    <processing>
+        <step-method.ballistic value="true"/>
+    </processing>
 
     <report>
         <verbose value="true"/>

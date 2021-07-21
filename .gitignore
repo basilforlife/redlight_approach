@@ -1,4 +1,4 @@
 **/*.swp
 **/*.pyc
 **/*.pickle
-**/*.xml
+**/tripinfo.xml
