@@ -1,11 +1,13 @@
 import argparse
-from random import uniform
+import numpy as np
 
+import matplotlib.pyplot as plt
 import traci
 import traci.constants as tc
 
 from Red_Light_Approach.state import State 
 from Red_Light_Approach.sumo_utils import *
+from Red_Light_Approach.run_sumo import run_sumo
 
 
 # Set up argparse
@@ -26,65 +28,13 @@ approach = load_approach(args)
 
 # Enter traci context
 sumo_cmd = sumo_command(args)
-traci.start(sumo_cmd)
-traci.vehicle.subscribe('vehicle_0', (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS))
-traci.vehicle.subscribe('vehicle_1', (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS))
 delay = 5.228 # Time to get to 100m
-red_duration = set_red_light_uniform_random(delay+10, delay+20)
-
-# Looping things
-step = 0
-approaching = False
-while traci.simulation.getMinExpectedNumber() != 0:
-    traci.simulationStep()
-    step += 1
-    sub_results = traci.vehicle.getSubscriptionResults('vehicle_0')
-    sub_results_1 = traci.vehicle.getSubscriptionResults('vehicle_1')
-    green_light = red_duration < step + 1# This is true if light is green
-
-    print('step', step)
-    print(f'green_light = {green_light}')
-    print(sub_results)
-    print(sub_results_1)
- 
-    # Check to see if vehicle_0 has a traffic light ahead, else continue
-    # Everything below here in the while loop is approach control
-    try:
-        next_TLS = sub_results[112][0]
-    except (KeyError, IndexError):
-        continue 
-
-    # Statements in this block run if there is a traffic light ahead
-    # -----------------BEGIN TLS-----------------------------------
-
-    # Extract state from subscription results
-    state = State(next_TLS[2] * -1, sub_results[64])
-
-    # Begin approach
-    # This runs only once when vehicle arrives in state space bounds
-    if state.x >= -100 and not green_light and not approaching:
-        approach_timestep = 0
-        approaching = True
-        traci.vehicle.setColor('vehicle_0', (246,186,34)) # Change color when approach starts
-
-    # End approach
-    # This runs only once to end the approach control
-    if green_light and approaching:
-        approaching = False
-        traci.vehicle.setSpeed('vehicle_0', -1) # Hand control back to sumo
-        traci.vehicle.setColor('vehicle_0', (24,255,130)) # Change color when approach ends
-
-    # This runs every timestep to control the approach
-    if approaching:
-        next_state, _ = approach.forward_step(state, approach_timestep)
-        traci.vehicle.setSpeed('vehicle_0', next_state.v)
-        approach_timestep += 1
-
-    # -------------------END TLS-----------------------------------
-
-# Exit traci context
-traci.close()
-
-# Report timeloss
-print(f'Red light duration = {red_duration}')
-print(f'Time Diff = {get_timeloss_diff("sumo/two_roads/tripinfo.xml", "vehicle_0", "vehicle_1")}s')
+num_samples = 5 
+red_durations = np.random.uniform(delay+10, delay+20, num_samples) # random sample from uniform distribution
+timeloss = np.zeros_like(red_durations)
+# Run simulation
+for i, red_duration in enumerate(red_durations):
+    timeloss[i] = run_sumo(sumo_cmd, approach, red_duration)
+    
+plt.scatter(red_durations, timeloss)
+plt.show()

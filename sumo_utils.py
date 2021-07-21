@@ -23,14 +23,8 @@ def set_lane_change_static(vehicle_ID):
 
 # This fn takes a time and sets the light red for that long
 def set_red_light(red_duration):
-    traci.trafficlight.setPhase('0', 2) # set traffic light id=2 to red
+    traci.trafficlight.setPhase('0', 2) # set traffic light id='0' to red
     traci.trafficlight.setPhaseDuration('0', red_duration)
-
-# this fn gets random time and sets the light to red for that long
-def set_red_light_uniform_random(low, high):
-    red_duration = uniform(low, high)
-    set_red_light(red_duration)
-    return red_duration
 
 # ---------------------TimeLoss Parsing Functions------------------------------
 
