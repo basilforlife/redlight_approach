@@ -61,9 +61,9 @@
     </edge>
 
     <tlLogic id="0" type="static" programID="0" offset="0">
-        <phase duration="2"  state="G"/>
-        <phase duration="4"  state="y"/>
-        <phase duration="5"  state="r"/>
+        <phase duration="10"  state="G"/>
+        <phase duration="5"  state="y"/>
+        <phase duration="15"  state="r"/>
     </tlLogic>
 
     <junction id="r0_0" type="dead_end" x="-200.00" y="50.00" incLanes="" intLanes="" shape="-200.00,50.00 -200.00,46.80"/>

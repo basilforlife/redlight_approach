@@ -14,7 +14,7 @@ from progress.bar import IncrementalBar
 
 from distribution import Distribution
 from state import State
-from utils import round_to_step
+from approach_utils import round_to_step
 
 
 # Approach Class implements the algorithm
