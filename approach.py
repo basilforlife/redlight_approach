@@ -12,9 +12,9 @@ import numpy as np
 
 from progress.bar import IncrementalBar
 
-from distribution import Distribution
-from state import State
-from approach_utils import round_to_step
+from Red_Light_Approach.distribution import Distribution
+from Red_Light_Approach.state import State
+from Red_Light_Approach.approach_utils import round_to_step
 
 
 # Approach Class implements the algorithm
@@ -27,6 +27,17 @@ class Approach:
 
         if json_path:
             self.configure(json_path)
+        else:
+            self.params = {}
+
+    def __repr__(self):
+        return f'Approach object: configured with {self.params}'
+
+    def __eq__(self, other):
+        if isinstance(other, Approach):
+            return other.params == self.params
+        else:
+            return False
 
     # Set the parameters used for computation
     def set_compute_params(self, x_step, v_step, t_step):
@@ -78,16 +89,17 @@ class Approach:
     # Includes parameters, initial conditions, and trivial consequences of these
     def configure(self, json_path):
         with open(json_path) as f:
-             test1 = json.load(f)
-        self.set_compute_params(x_step=test1['compute_params']['x_step'],
-                                v_step=test1['compute_params']['v_step'],
-                                t_step=test1['compute_params']['t_step'])
-        self.set_world_params(v_max=test1['world_params']['v_max'],
-                              a_max=test1['world_params']['a_max'])
-        self.set_traffic_light_params(first_support=test1['traffic_light_params']['first_support'],
-                                      last_support=test1['traffic_light_params']['last_support'])
-        self.set_init_conditions(x_start=test1['init_conditions']['x_start'],
-                                 v_start=test1['init_conditions']['v_start'])
+             params = json.load(f)
+        self.params = params # This is for __repr__() 
+        self.set_compute_params(x_step=params['compute_params']['x_step'],
+                                v_step=params['compute_params']['v_step'],
+                                t_step=params['compute_params']['t_step'])
+        self.set_world_params(v_max=params['world_params']['v_max'],
+                              a_max=params['world_params']['a_max'])
+        self.set_traffic_light_params(first_support=params['traffic_light_params']['first_support'],
+                                      last_support=params['traffic_light_params']['last_support'])
+        self.set_init_conditions(x_start=params['init_conditions']['x_start'],
+                                 v_start=params['init_conditions']['v_start'])
         self.compute_state_space_shape()
 
     # Discretize state to position and velocity steps

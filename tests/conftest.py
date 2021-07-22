@@ -3,13 +3,14 @@ import numpy as np
 
 import pytest
 
-from Red_Light_Approach.approach import *
+from Red_Light_Approach.approach import Approach
+from Red_Light_Approach.distribution import Distribution
+from Red_Light_Approach.state import State
 
 
 # Load test case parameters
-f = open('tests/test_params.json')
-test1 = json.load(f)
-f.close
+with open('tests/test_params.json') as f:
+    test1 = json.load(f)
 
 @pytest.fixture
 def uniform_dist():
@@ -24,17 +25,7 @@ def uniform_dist_result():
 
 @pytest.fixture
 def approach():
-    approach = Approach()
-    approach.set_compute_params(x_step=test1['compute_params']['x_step'],
-                                v_step=test1['compute_params']['v_step'],
-                                t_step=test1['compute_params']['t_step'])
-    approach.set_world_params(v_max=test1['world_params']['v_max'],
-                              a_max=test1['world_params']['a_max'])
-    approach.set_traffic_light_params(first_support=test1['traffic_light_params']['first_support'],
-                                      last_support=test1['traffic_light_params']['last_support'])
-    approach.set_init_conditions(x_start=test1['init_conditions']['x_start'],
-                                 v_start=test1['init_conditions']['v_start'])
-    approach.compute_state_space_shape()
+    approach = Approach('tests/test_params.json')
     return approach
 
 @pytest.fixture

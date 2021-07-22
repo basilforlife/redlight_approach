@@ -27,14 +27,17 @@ add_sumo_path()
 approach = load_approach(args)
 
 # Enter traci context
-sumo_cmd = sumo_command(args)
+sumo_cmd = sumo_command(args, approach)
 delay = 5.228 # Time to get to 100m
-num_samples = 5 
+num_samples = 1 
 red_durations = np.random.uniform(delay+10, delay+20, num_samples) # random sample from uniform distribution
 timeloss = np.zeros_like(red_durations)
+
+speed_limit = approach.v_max 
+
 # Run simulation
 for i, red_duration in enumerate(red_durations):
-    timeloss[i] = run_sumo(sumo_cmd, approach, red_duration)
+    timeloss[i] = run_sumo(sumo_cmd, approach, red_duration, speed_limit)
     
 plt.scatter(red_durations, timeloss)
 plt.show()

@@ -1,9 +1,6 @@
 import pytest
 
-
-class TestDistribution:	
-    def test_uniform_dist(self, uniform_dist, uniform_dist_result):
-        assert (uniform_dist.dist == uniform_dist_result).all()
+from Red_Light_Approach.state import State
 
 
 class TestApproach:
@@ -25,8 +22,15 @@ class TestApproach:
     def test_state_to_indices_to_state(self, approach, init_state):
         indices = approach.state_to_indices(init_state)
         new_state = approach.indices_to_state(indices)
-        assert new_state == init_state
+        assert init_state == new_state
 
+
+    def test_indices_to_state_to_indices(self, approach):
+        indices = (100,36)
+        new_state = approach.indices_to_state(indices)
+        indices_2 = approach.state_to_indices(new_state)
+        assert indices == indices_2
+ 
     def test_rho_red_light_check(self, approach, ran_red_state):
         assert approach.rho(ran_red_state,10) == -999999999
 

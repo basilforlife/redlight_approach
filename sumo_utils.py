@@ -21,6 +21,11 @@ def add_sumo_path():
 def set_lane_change_static(vehicle_ID):
     traci.vehicle.setLaneChangeMode(vehicle_ID, 0x000000000000)
 
+# This fn set the speed limit for all lanes in the simulation
+def set_lane_speed_limits(lane_IDs, speed_limit):
+    for ID in lane_IDs:
+        traci.lane.setMaxSpeed(ID, speed_limit)
+
 # This fn takes a time and sets the light red for that long
 def set_red_light(red_duration):
     traci.trafficlight.setPhase('0', 2) # set traffic light id='0' to red
@@ -50,13 +55,30 @@ def get_timeloss_diff(filepath, vehicle_ID_0, vehicle_ID_1):
 
 # ---------------------Args Processing Functions-------------------------------
 
+# This fn takes command line args and returns appropriate sumo config flags
+def sumo_flags_from_args(args):
+    flags = []
+    flags.append('-c')
+    flags.append(args.path_to_sumocfg)
+    return flags
+
+# This fn takes an approach object and returns matching sumo config flags
+def sumo_flags_from_approach_config(approach):
+    flags = []
+    flags.append('--step-length')
+    flags.append(str(approach.t_step))
+    return flags
+
 # This fn takes the command line args and returns the sumo command
-def sumo_command(args):
+def sumo_command(args, approach):
     if args.gui:
         sumo_location = '/usr/local/bin/sumo-gui' # Use graphical simulator
     else:
         sumo_location = '/usr/local/bin/sumo' # Use command line only simulator
-    return [sumo_location, '-c', args.path_to_sumocfg]
+    command = [sumo_location]
+    flags_from_args = sumo_flags_from_args(args)
+    flags_from_approach = sumo_flags_from_approach_config(approach)
+    return command + flags_from_args + flags_from_approach
 
 # This fn takes a filename containing a pickled object and returns the object
 def read_pickle(filename):
