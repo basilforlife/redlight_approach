@@ -55,6 +55,17 @@ def get_timeloss_diff(filepath, vehicle_ID_0, vehicle_ID_1):
 
 # ---------------------Args Processing Functions-------------------------------
 
+# This fn rewrites the rou.xml file to set accel and decel values
+def set_accel_decel_xml_file(accel, decel, in_filename, out_filename):
+    tree = ET.parse(in_filename)
+    root = tree.getroot()
+    vtype = root.find('vType')
+    vtype.attrib['accel'] = str(accel) 
+    print('setting accel to', accel)
+    vtype.attrib['decel'] = str(decel) 
+    vtype.attrib['emergencyDecel'] = str(decel) 
+    tree.write(out_filename)
+
 # This fn takes command line args and returns appropriate sumo config flags
 def sumo_flags_from_args(args):
     flags = []
@@ -65,12 +76,21 @@ def sumo_flags_from_args(args):
 # This fn takes an approach object and returns matching sumo config flags
 def sumo_flags_from_approach_config(approach):
     flags = []
+
+    # Timestep
     flags.append('--step-length')
     flags.append(str(approach.t_step))
     return flags
 
+# This fn takes a fixed set of filenames to add to sumo flags
+def sumo_flags_fixed(route_filename):
+    flags = []
+    flags.append('-r')
+    flags.append(route_filename)
+    return flags
+
 # This fn takes the command line args and returns the sumo command
-def sumo_command(args, approach):
+def sumo_command(args, approach, route_filename):
     if args.gui:
         sumo_location = '/usr/local/bin/sumo-gui' # Use graphical simulator
     else:
@@ -78,7 +98,8 @@ def sumo_command(args, approach):
     command = [sumo_location]
     flags_from_args = sumo_flags_from_args(args)
     flags_from_approach = sumo_flags_from_approach_config(approach)
-    return command + flags_from_args + flags_from_approach
+    flags_fixed = sumo_flags_fixed(route_filename)
+    return command + flags_from_args + flags_from_approach + flags_fixed
 
 # This fn takes a filename containing a pickled object and returns the object
 def read_pickle(filename):
