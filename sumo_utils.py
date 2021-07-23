@@ -70,7 +70,7 @@ def set_accel_decel_xml_file(accel, decel, in_filename, out_filename):
 def sumo_flags_from_args(args):
     flags = []
     flags.append('-c')
-    flags.append(args.path_to_sumocfg)
+    flags.append(args.sumocfg_file)
     return flags
 
 # This fn takes an approach object and returns matching sumo config flags
@@ -113,14 +113,19 @@ def write_pickle(filename, obj):
 
 # This fn takes command line args and loads an approach object accordingly
 def load_approach(args):
+
+    # Check for incompatible flags
+    if args.unpickle and args.approach_config_file:
+        raise ValueError('Can only load approach object from config file or pickle')
     if args.unpickle:
-        approach = read_pickle(args.pickle_file)
+        approach = read_pickle(args.unpickle)
     else:
+        assert args.approach_config_file, 'Must include approach config file in flags'
         # Set up approach stuff
-        approach = Approach(args.path_to_approach_config)
+        approach = Approach(args.approach_config_file)
         approach.build_adjacency_matrix()
         approach.backward_pass()
     if args.pickle:
-        write_pickle(args.pickle_file, approach)
+        write_pickle(args.pickle, approach)
     return approach
 # --------------------/Args Processing Functions-------------------------------

@@ -13,12 +13,22 @@ from Red_Light_Approach.run_sumo import run_sumo
 
 # Set up argparse
 parser = argparse.ArgumentParser(description='Run a SUMO simulation with an approach controller')
-parser.add_argument('path_to_sumocfg', type=str, help='relative or absolute path to .sumocfg file to run')
-parser.add_argument('path_to_approach_config', type=str, help='relative or absolute path to .json file to configure approach')
-parser.add_argument('-g', '--gui', action='store_true', help='Run the simulation in sumo-gui. Default is to run in sumo') 
-parser.add_argument('-p', '--pickle', action='store_true', help='Pickle approach object')
-parser.add_argument('-u', '--unpickle', action='store_true', help='Load approach object from pickle')
-parser.add_argument('--pickle-file', default='approach.pickle', type=str, help='Location of pickle file. Defaults to approach.pickle')
+parser.add_argument('-s', '--sumocfg_file',
+                    default='sumo/two_roads/f.sumocfg',
+                    type=str,
+                    help='path to .sumocfg file to run. Default sumo/two_roads/f.sumocfg')
+parser.add_argument('-c', '--approach_config_file',
+                    type=str,
+                    help='path to .json file to configure approach')
+parser.add_argument('-p', '--pickle',
+                    type=str,
+                    help='File to pickle approach object to')
+parser.add_argument('-u', '--unpickle',
+                    type=str,
+                    help='File to load approach object pickle from')
+parser.add_argument('-g', '--gui',
+                    action='store_true',
+                    help='Run the simulation in sumo-gui. Default is to run in sumo') 
 args = parser.parse_args()
 
 # Ensure sumo is on system path
