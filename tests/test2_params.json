@@ -6,14 +6,14 @@
     },
     "world_params":{
         "v_max":18,
-        "a_max":1
+        "a_max":2.0
     },
     "traffic_light_params":{
         "first_support":10,
         "last_support":20
     },
     "init_conditions":{
-        "x_start":-100,
+        "x_start":-150,
         "v_start":18
     },
     "state_space_shape":[

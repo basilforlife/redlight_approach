@@ -61,7 +61,6 @@ def set_accel_decel_xml_file(accel, decel, in_filename, out_filename):
     root = tree.getroot()
     vtype = root.find('vType')
     vtype.attrib['accel'] = str(accel) 
-    print('setting accel to', accel)
     vtype.attrib['decel'] = str(decel) 
     vtype.attrib['emergencyDecel'] = str(decel) 
     tree.write(out_filename)

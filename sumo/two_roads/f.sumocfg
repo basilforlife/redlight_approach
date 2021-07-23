@@ -23,6 +23,8 @@
 
     <gui_only>
         <delay value="250"/>
+        <quit-on-end value='true'/>
+        <start value='true'/>
     </gui_only>
 
 </configuration>
