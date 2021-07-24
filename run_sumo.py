@@ -6,7 +6,7 @@ from Red_Light_Approach.sumo_utils import *
 
 
 # This fn runs a sumo/traci simulation and returns the timeLoss difference
-def run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance):
+def run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance, verbose=False):
     
     
     traci.start(sumo_cmd)
@@ -28,10 +28,11 @@ def run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance):
         sub_results_1 = traci.vehicle.getSubscriptionResults('vehicle_1')
         green_light = red_duration < step + 1# This is true if light is green
     
-        #print('step', step)
-        #print(f'green_light = {green_light}')
-        #print(sub_results)
-        #print(sub_results_1)
+        if verbose:
+            print('step', step)
+            print(f'green_light = {green_light}')
+            print(sub_results)
+            print(sub_results_1)
     
         # Check to see if vehicle_0 has a traffic light ahead, else continue
         # Everything below here in the while loop is approach control
@@ -64,6 +65,7 @@ def run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance):
         if approaching:
             next_state, _ = approach.forward_step(state, approach_timestep)
             traci.vehicle.setSpeed('vehicle_0', next_state.v)
+            if verbose: print(f'approach timestep = {approach_timestep}')
             approach_timestep += 1
     
         # -------------------END TLS-----------------------------------

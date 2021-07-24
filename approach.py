@@ -9,6 +9,7 @@ from itertools import product
 import json
 from math import floor, ceil
 import numpy as np
+import time
 
 from progress.bar import IncrementalBar
 
@@ -247,6 +248,7 @@ class Approach:
         # Iterate through all timesteps to fill out I
         # This progresses backwards in clock time through I, which has rows in reverse chronological order
         bar = IncrementalBar('Calculating I', max=self.num_timesteps)
+        start = time.time() 
         for timestep in range(self.num_timesteps - 1, -1, -1):
 
             # Iterate through all states 
@@ -255,6 +257,8 @@ class Approach:
 
             bar.next()
         bar.finish()
+        stop = time.time()
+        print(f'Time to compute I: {stop - start}s')
                  
     # This fn takes one step in time forward through I
     def forward_step(self, state, timestep):

@@ -29,6 +29,13 @@ parser.add_argument('-u', '--unpickle',
 parser.add_argument('-g', '--gui',
                     action='store_true',
                     help='Run the simulation in sumo-gui. Default is to run in sumo') 
+parser.add_argument('-v', '--verbose',
+                    action='store_true',
+                    help='Print information about each timestep to console')
+parser.add_argument('-N',
+                    default=1,
+                    type=int,
+                    help='This option runs the simulation N times and if N > 1, it plots them. Defaults to N=1.')
 args = parser.parse_args()
 
 # Ensure sumo is on system path
@@ -49,24 +56,22 @@ sumo_cmd = sumo_command(args, approach, new_route_filename)
 
 # Set up simulation stuff
 delay = 5.228 # Time to get to 100m
-num_samples = 30 
+num_samples = args.N
 red_durations = np.random.uniform(delay+10, delay+20, num_samples) # random sample from uniform distribution
 timeloss = np.zeros_like(red_durations)
 
 # Run simulation
 for i, red_duration in enumerate(red_durations):
-    timeloss[i] = run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance)
+    timeloss[i] = run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance, args.verbose)
     
 # Cleanup
 os.remove(new_route_filename)
 
 # Plot
-#plot_results(red_durations, timeloss)
-plt.scatter(red_durations, timeloss)
-#plt.axvline(0)
-#plt.axhline(0)
-plt.title('test')
-plt.show()
+if args.N > 1:
+    plt.scatter(red_durations, timeloss)
+    plt.title('test')
+    plt.show()
 
 # Print avg time saved
 print(f'Mean time saved: {np.mean(timeloss)}s')

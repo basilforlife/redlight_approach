@@ -2,18 +2,18 @@
     "compute_params":{
         "x_step":1,
         "v_step":0.5,
-        "t_step":1
+        "t_step":0.5
     },
     "world_params":{
         "v_max":18,
-        "a_max":2.0
+        "a_max":2.5
     },
     "traffic_light_params":{
         "first_support":10,
         "last_support":20
     },
     "init_conditions":{
-        "x_start":-150,
+        "x_start":-100,
         "v_start":18
     },
     "state_space_shape":[
