@@ -30,11 +30,11 @@ def approach():
 
 @pytest.fixture
 def state_space_shape():
-    return tuple(test1['state_space_shape'])
+    return (101, 37)
 
 @pytest.fixture
 def t_eval():
-    return test1['t_eval']
+    return 27.2 
 
 @pytest.fixture
 def init_state():

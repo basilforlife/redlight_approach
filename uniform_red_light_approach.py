@@ -74,5 +74,5 @@ if args.N > 1:
     plt.show()
 
 # Print avg time saved
-print(f'Mean time saved: {np.mean(timeloss)}s')
+print(f'Mean time saved: {np.mean(timeloss):.2f}s')
 
