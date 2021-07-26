@@ -49,15 +49,14 @@ speed_limit = approach.v_max
 approach_distance = approach.x_min
 route_filename = 'sumo/two_roads/f.rou.xml'
 new_route_filename = 'sumo/two_roads/modified.rou.xml'
-set_accel_decel_xml_file(approach.a_max, approach.a_max, route_filename, new_route_filename)
+edit_rou_xml_file(route_filename, new_route_filename, approach, 200)
 
 # Configure sumo command with all the flags we need
 sumo_cmd = sumo_command(args, approach, new_route_filename)
 
 # Set up simulation stuff
-delay = 5.228 # Time to get to 100m
 num_samples = args.N
-red_durations = np.random.uniform(delay+10, delay+20, num_samples) # random sample from uniform distribution
+red_durations = approach.green_dist.sample(num_samples) # random sample from uniform distribution
 timeloss = np.zeros_like(red_durations)
 
 # Run simulation

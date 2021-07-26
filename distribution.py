@@ -8,7 +8,6 @@ class Distribution(ABC):
 
     def __init__(self, t_step):
         self.t_step = t_step
-        self.rng = np.random.default_rng()
 
     @abstractmethod
     def __repr__(self, class_name, parameters):
@@ -39,4 +38,5 @@ class UniformDistribution(Distribution):
 
     # This returns continuous samples with units [s]
     def sample(self, num_samples):
+        self.rng = np.random.default_rng()
         return self.rng.uniform(self.first_support, self.last_support, num_samples)

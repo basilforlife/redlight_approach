@@ -55,15 +55,37 @@ def get_timeloss_diff(filepath, vehicle_ID_0, vehicle_ID_1):
 
 # ---------------------Args Processing Functions-------------------------------
 
+# This class creates a context manager for editing an xml tree and writing result to new file
+class EditXML:
+    def __init__(self, in_filename, out_filename):
+        self.out_filename = out_filename
+        self.tree = ET.parse(in_filename)
+        self.root = self.tree.getroot()
+
+    def __enter__(self):
+        return self.root
+
+    def __exit__(self, type, value, traceback):
+        self.tree.write(self.out_filename)
+
+def set_depart_pos_xml(root, x_min, edge_len):
+    vehicles = root.findall('vehicle')
+    for vehicle in vehicles: 
+        vehicle.attrib['departPos'] = str(edge_len + x_min) # x_min is negative, so set vehicle abs(x_min) back from end of edge 
+
 # This fn rewrites the rou.xml file to set accel and decel values
-def set_accel_decel_xml_file(accel, decel, in_filename, out_filename):
-    tree = ET.parse(in_filename)
-    root = tree.getroot()
+def set_accel_decel_xml(root, accel, decel):
     vtype = root.find('vType')
     vtype.attrib['accel'] = str(accel) 
     vtype.attrib['decel'] = str(decel) 
     vtype.attrib['emergencyDecel'] = str(decel) 
-    tree.write(out_filename)
+
+# This does the whole rou.xml processing
+# Pass first edge_len that is for approaching the light	
+def edit_rou_xml_file(in_filename, out_filename, approach, edge_len):
+    with EditXML(in_filename, out_filename) as xmlroot:
+         set_depart_pos_xml(xmlroot, approach.x_min, edge_len)
+         set_accel_decel_xml(xmlroot, approach.a_max, approach.a_max)
 
 # This fn takes command line args and returns appropriate sumo config flags
 def sumo_flags_from_args(args):
