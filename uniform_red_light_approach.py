@@ -8,7 +8,7 @@ import traci.constants as tc
 
 from Red_Light_Approach.state import State 
 from Red_Light_Approach.sumo_utils import *
-from Red_Light_Approach.run_sumo import run_sumo
+from Red_Light_Approach.sumo_simulation import SumoSimulation
 
 
 # Set up argparse
@@ -38,21 +38,16 @@ parser.add_argument('-N',
                     help='This option runs the simulation N times and if N > 1, it plots them. Defaults to N=1.')
 args = parser.parse_args()
 
-# Ensure sumo is on system path
-add_sumo_path()
-
 # Load approach object according to command line args
 approach = load_approach(args)
 
 # Configure sumo to match approach params
-speed_limit = approach.v_max 
-approach_distance = approach.x_min
 route_filename = 'sumo/two_roads/f.rou.xml'
 new_route_filename = 'sumo/two_roads/modified.rou.xml'
 edit_rou_xml_file(route_filename, new_route_filename, approach, 200)
 
-# Configure sumo command with all the flags we need
-sumo_cmd = sumo_command(args, approach, new_route_filename)
+# Configure SumoRunner
+sumo_sim = SumoSimulation(approach, args.sumocfg_file, new_route_filename, args.gui, args.verbose)
 
 # Set up simulation stuff
 num_samples = args.N
@@ -61,7 +56,7 @@ timeloss = np.zeros_like(red_durations)
 
 # Run simulation
 for i, red_duration in enumerate(red_durations):
-    timeloss[i] = run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance, args.verbose)
+    timeloss[i] = sumo_sim.run(red_duration)
     
 # Cleanup
 os.remove(new_route_filename)
