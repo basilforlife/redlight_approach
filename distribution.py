@@ -1,15 +1,32 @@
+from abc import ABC, abstractmethod
 from math import floor, ceil
 import numpy as np
 
-# Dist class holds a distribution representing the green light event
-class Distribution:
-    def __init__(self):
-        self.dist = None
 
-    # Times are with reference to current time
-    def uniform_dist(self, first_support, last_support, t_step):
-        num_full_timesteps = floor((last_support - first_support)/t_step)
-        num_timesteps = floor(last_support/t_step)
+# Abstract base class for distribution
+class Distribution(ABC):
+
+    def __init__(self, t_step):
+        self.t_step = t_step
+        self.rng = np.random.default_rng()
+
+    @abstractmethod
+    def sample(self):
+        pass
+
+# Uniform distribution with delay
+class UniformDistribution(Distribution):
+
+    def __init__(self, first_support, last_support, t_step):
+        super().__init__(t_step)
+        self.first_support = first_support
+        self.last_support = last_support
+        num_full_timesteps = floor((self.last_support - self.first_support)/self.t_step)
+        num_timesteps = floor(self.last_support/self.t_step)
         self.dist = np.zeros(num_timesteps)
         support = np.ones(num_full_timesteps)/num_full_timesteps
         self.dist[-num_full_timesteps:] = support
+
+    # This returns continuous samples with units [s]
+    def sample(self, num_samples):
+        return self.rng.uniform(self.first_support, self.last_support, num_samples)
