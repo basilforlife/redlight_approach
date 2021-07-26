@@ -6,7 +6,7 @@
     },
     "world_params":{
         "v_max":18,
-        "a_max":2.5
+        "a_max":3
     },
     "traffic_light_params":{
         "first_support":10,

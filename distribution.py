@@ -11,6 +11,10 @@ class Distribution(ABC):
         self.rng = np.random.default_rng()
 
     @abstractmethod
+    def __repr__(self, class_name, parameters):
+        return f'{class_name} object: parameters: {parameters}'
+
+    @abstractmethod
     def sample(self):
         pass
 
@@ -26,6 +30,12 @@ class UniformDistribution(Distribution):
         self.dist = np.zeros(num_timesteps)
         support = np.ones(num_full_timesteps)/num_full_timesteps
         self.dist[-num_full_timesteps:] = support
+
+    def __repr__(self):
+        params = {'first_support': self.first_support,
+                  'last_support' : self.last_support,
+                  't_step'       : self.t_step}
+        return super().__repr__('UniformDistribution', params)
 
     # This returns continuous samples with units [s]
     def sample(self, num_samples):

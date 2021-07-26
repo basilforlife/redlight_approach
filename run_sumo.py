@@ -26,7 +26,7 @@ def run_sumo(sumo_cmd, approach, red_duration, speed_limit, approach_distance, v
         step += 1
         sub_results = traci.vehicle.getSubscriptionResults('vehicle_0')
         sub_results_1 = traci.vehicle.getSubscriptionResults('vehicle_1')
-        green_light = red_duration < step + 1# This is true if light is green
+        green_light = red_duration / approach.t_step < step + 1# This is true if light is green
     
         if verbose:
             print('step', step)

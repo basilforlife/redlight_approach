@@ -74,5 +74,6 @@ if args.N > 1:
     plt.show()
 
 # Print avg time saved
+if args.N == 1: print(f'Red light duration: {red_durations[0]}')
 print(f'Mean time saved: {np.mean(timeloss):.2f}s')
 

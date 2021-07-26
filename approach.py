@@ -13,7 +13,7 @@ import time
 
 from progress.bar import IncrementalBar
 
-from Red_Light_Approach.distribution import Distribution
+from Red_Light_Approach.distribution import UniformDistribution
 from Red_Light_Approach.state import State
 from Red_Light_Approach.approach_utils import round_to_step
 
@@ -55,8 +55,8 @@ class Approach:
 
         # set traffic light distribution
     def set_traffic_light_params(self, first_support, last_support):
-        self.green_dist = Distribution()
-        self.green_dist.uniform_dist(first_support, last_support, self.t_step)
+        self.green_dist = UniformDistribution(first_support, last_support, self.t_step)
+
         self.calc_t_eval(last_support)
 
     # calc_t_eval() calculates t_eval, which is the time at which the vehicle will be back up to

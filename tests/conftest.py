@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from Red_Light_Approach.approach import Approach
-from Red_Light_Approach.distribution import Distribution
+from Red_Light_Approach.distribution import *
 from Red_Light_Approach.state import State
 
 
@@ -14,14 +14,7 @@ with open('tests/test_params.json') as f:
 
 @pytest.fixture
 def uniform_dist():
-    distribution = Distribution()
-    distribution.uniform_dist(10,20,1)
-    return distribution
-
-@pytest.fixture
-def uniform_dist_result():
-    x = np.zeros(10)
-    return np.concatenate([x, x + 0.1])
+    return UniformDistribution(0,10,1)
 
 @pytest.fixture
 def approach():

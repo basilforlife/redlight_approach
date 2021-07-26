@@ -1,6 +1,14 @@
+import math
 import pytest
 
 
-class TestDistribution:
-    def test_uniform_dist(self, uniform_dist, uniform_dist_result):
-        assert (uniform_dist.dist == uniform_dist_result).all()
+class TestUniformDistribution:
+    def test_dist_sum(self, uniform_dist):
+        assert math.isclose(sum(uniform_dist.dist), 1)
+
+    def test_sample(self, uniform_dist):
+        N = 10
+        assert len(uniform_dist.sample(N)) == N
+
+    def test_repr(self, uniform_dist):
+        assert type(uniform_dist.__repr__()) == str

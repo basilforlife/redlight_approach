@@ -4,9 +4,6 @@ from Red_Light_Approach.state import State
 
 
 class TestApproach:
-    def test_green_dist(self, approach, uniform_dist_result):
-        assert (approach.green_dist.dist == uniform_dist_result).all()
-
     def test_calc_t_eval(self, approach, t_eval):
         assert approach.t_eval == t_eval 
 
