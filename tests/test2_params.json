@@ -2,11 +2,11 @@
     "compute_params":{
         "x_step":1,
         "v_step":0.5,
-        "t_step":1
+        "t_step":0.5
     },
     "world_params":{
-        "v_max":18,
-        "a_max":2.5
+        "v_max":15,
+        "a_max":3
     },
     "traffic_light_params":{
         "first_support":15,
@@ -14,6 +14,6 @@
     },
     "init_conditions":{
         "x_start":-100,
-        "v_start":18
+        "v_start":15
     }
 }   
