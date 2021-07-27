@@ -21,25 +21,6 @@ class XMLFile:
         if self.out_filename:
             self.tree.write(self.out_filename)
 
-def set_depart_pos_xml(root, x_min, edge_len):
-    vehicles = root.findall('vehicle')
-    for vehicle in vehicles: 
-        vehicle.attrib['departPos'] = str(edge_len + x_min) # x_min is negative, so set vehicle abs(x_min) back from end of edge 
-
-# This fn rewrites the rou.xml file to set accel and decel values
-def set_accel_decel_xml(root, accel, decel):
-    vtype = root.find('vType')
-    vtype.attrib['accel'] = str(accel) 
-    vtype.attrib['decel'] = str(decel) 
-    vtype.attrib['emergencyDecel'] = str(decel) 
-
-# This does the whole rou.xml processing
-# Pass first edge_len that is for approaching the light	
-def edit_rou_xml_file(in_filename, out_filename, approach, edge_len):
-    with XMLFile(in_filename, out_filename) as xmlroot:
-         set_depart_pos_xml(xmlroot, approach.x_min, edge_len)
-         set_accel_decel_xml(xmlroot, approach.a_max, approach.a_max)
-
 # This fn takes a filename containing a pickled object and returns the object
 def read_pickle(filename):
     with open(filename, 'rb') as f:

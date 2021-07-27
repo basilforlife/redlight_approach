@@ -5,19 +5,36 @@ import traci
 import traci.constants as tc
 
 from Red_Light_Approach.state import State
-from Red_Light_Approach.sumo_utils import *
+from Red_Light_Approach.sumo_utils import XMLFile
 
 
 
 # This class can run sumo a bunch
 class SumoSimulation():
 
-    def __init__(self, approach, sumocfg_filename, route_filename, gui=False, verbose=False):
+    def __init__(self,
+                 approach,
+                 sumocfg_filename,
+                 route_filename,
+                 temp_route_filename,
+                 first_edge_len,
+                 gui=False, 
+                 verbose=False):
         self.add_sumo_path()
         self.approach = approach
         self.verbose = verbose
-        self.set_sumo_command(gui, sumocfg_filename, route_filename)
+        self.temp_route_filename = temp_route_filename
+        self.set_sumo_command(gui, sumocfg_filename, temp_route_filename)
+        self.edit_rou_xml_file(route_filename,
+                               self.temp_route_filename,
+                               self.approach.x_min,
+                               self.approach.a_max,
+                               first_edge_len)
 
+
+    # This cleans up the object
+    def __del__(self):
+        os.remove(self.temp_route_filename)
 
     # This fn makes sure sumo is on the system path
     def add_sumo_path(self):
@@ -68,11 +85,30 @@ class SumoSimulation():
         else:
             sumo_location = '/usr/local/bin/sumo' # Use command line only simulator
         command = [sumo_location]
-        sumocfg_flag = self.sumocfg_flag(sumocfg_filename) # TODO
+        sumocfg_flag = self.sumocfg_flag(sumocfg_filename)
         steplength_flag = self.steplength_flag(self.approach.t_step)
         routefile_flag = self.routefile_flag(route_filename)
         self.sumo_command = command + sumocfg_flag + steplength_flag + routefile_flag
 
+    def set_depart_pos_xml(self, root, x_min, edge_len):
+        vehicles = root.findall('vehicle')
+        for vehicle in vehicles:
+            vehicle.attrib['departPos'] = str(edge_len + x_min) # x_min is negative, so set vehicle abs(x_min) back from end of edge
+    
+    # This fn rewrites the rou.xml file to set accel and decel values
+    def set_accel_decel_xml(self, root, accel, decel):
+        vtype = root.find('vType')
+        vtype.attrib['accel'] = str(accel)
+        vtype.attrib['decel'] = str(decel)
+        vtype.attrib['emergencyDecel'] = str(decel)
+    
+    # This does the whole rou.xml processing
+    # Pass first edge_len that is for approaching the light
+    def edit_rou_xml_file(self, in_filename, out_filename, x_min, a_max, edge_len):
+        with XMLFile(in_filename, out_filename) as xmlroot:
+             self.set_depart_pos_xml(xmlroot, x_min, edge_len)
+             self.set_accel_decel_xml(xmlroot, a_max, a_max)
+    
     # Get a dict with vehicleID:timeLoss key value pairs from given tripinfo xml file
     def get_timeloss_dict(self, filename):
         timeloss_dict = {}
@@ -87,18 +123,10 @@ class SumoSimulation():
         timeloss_dict = self.get_timeloss_dict(filename)
         return timeloss_dict[vehicle_ID_1] - timeloss_dict[vehicle_ID_0]
 
-
-
-
-
     # This fn runs a sumo/traci simulation and returns the timeLoss difference
     def run(self, red_duration):
-        
-        
         traci.start(self.sumo_command)
-    
         self.set_speed_limit(self.approach.v_max)
-    
         traci.vehicle.subscribe('vehicle_0', (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS))
         traci.vehicle.subscribe('vehicle_1', (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS))
         self.set_red_light(red_duration, '0') # Traffic light ID = '0'

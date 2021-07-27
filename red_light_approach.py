@@ -41,25 +41,28 @@ args = parser.parse_args()
 # Load approach object according to command line args
 approach = load_approach(args)
 
-# Configure sumo to match approach params
+# Configure some filenames
 route_filename = 'sumo/two_roads/f.rou.xml'
-new_route_filename = 'sumo/two_roads/modified.rou.xml'
-edit_rou_xml_file(route_filename, new_route_filename, approach, 200)
+temp_route_filename = 'sumo/two_roads/modified.rou.xml'
+first_edge_len = 200
 
-# Configure SumoRunner
-sumo_sim = SumoSimulation(approach, args.sumocfg_file, new_route_filename, args.gui, args.verbose)
+# Configure SumoSimulation
+sumo_sim = SumoSimulation(approach,
+                          args.sumocfg_file,
+                          route_filename,
+                          temp_route_filename,
+                          first_edge_len,
+                          args.gui,
+                          args.verbose)
 
 # Set up simulation stuff
 num_samples = args.N
 red_durations = approach.green_dist.sample(num_samples) # random sample from uniform distribution
 timeloss = np.zeros_like(red_durations)
 
-# Run simulation
+# Run simulation N times
 for i, red_duration in enumerate(red_durations):
     timeloss[i] = sumo_sim.run(red_duration)
-    
-# Cleanup
-os.remove(new_route_filename)
 
 # Plot
 if args.N > 1:
