@@ -31,7 +31,6 @@ class SumoSimulation():
                                self.approach.a_max,
                                first_edge_len)
 
-
     # This cleans up the object
     def __del__(self):
         os.remove(self.temp_route_filename)
@@ -61,7 +60,6 @@ class SumoSimulation():
         self.set_lane_speed_limits(lane_IDs, speed_limit)
     
     # This fn takes a time and sets the light red for that long
-    # Traffic light ID must be string  SHOULD BE '0'
     def set_red_light(self, red_duration, trafficlight_ID):
         traci.trafficlight.setPhase(trafficlight_ID, 2) # set traffic light to red 
         traci.trafficlight.setPhaseDuration(trafficlight_ID, red_duration)
