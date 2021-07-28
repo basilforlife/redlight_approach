@@ -44,10 +44,11 @@ class Approach:
         self.v_max = round_to_step(v_max, self.v_step, behavior="floor")
         self.a_max = a_max
 
-        # set traffic light distribution
-
+    # set traffic light distribution
     def set_traffic_light_params(self, first_support, last_support):
-        self.green_dist = UniformDistribution(first_support, last_support, self.t_step)
+        self.green_distribution = UniformDistribution(
+            first_support, last_support, self.t_step
+        )
 
         self.calc_t_eval(last_support)
 
@@ -234,7 +235,7 @@ class Approach:
     def calc_I(self, state_indices, timestep):
 
         # alpha is the probability of event G occurring right now
-        alpha = self.green_dist.dist[timestep]
+        alpha = self.green_distribution.distribution[timestep]
         if timestep != self.num_timesteps - 1:
             max_reachable, argmax_reachable = self.find_max_next_state(
                 state_indices, timestep
@@ -267,7 +268,7 @@ class Approach:
 
         # calculate number of timesteps
         self.num_timesteps = len(
-            self.green_dist.dist
+            self.green_distribution.distribution
         )  # This should work out to be the number of timesteps from 0 to last_support
 
         # Initialize I to timesteps x statespace size

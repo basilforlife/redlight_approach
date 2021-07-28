@@ -70,7 +70,7 @@ sumo_sim = SumoSimulation(
 
 # Set up simulation stuff
 num_samples = args.N
-red_durations = approach.green_dist.sample(
+red_durations = approach.green_distribution.sample(
     num_samples
 )  # random sample from uniform distribution
 timeloss = np.zeros_like(red_durations)

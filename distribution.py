@@ -78,7 +78,7 @@ class UniformDistribution(Distribution):
 
         Examples
         --------
-        >>> UniformDistribution(2,4,1).dist
+        >>> UniformDistribution(2,4,1).distribution
         array([0. , 0. , 0.5, 0.5])
         """
         super().__init__(t_step)
@@ -88,9 +88,9 @@ class UniformDistribution(Distribution):
             (self.last_support - self.first_support) / self.t_step
         )
         num_timesteps = floor(self.last_support / self.t_step)
-        self.dist = np.zeros(num_timesteps)
+        self.distribution = np.zeros(num_timesteps)
         support = np.ones(num_full_timesteps) / num_full_timesteps
-        self.dist[-num_full_timesteps:] = support
+        self.distribution[-num_full_timesteps:] = support
 
     def __repr__(self) -> str:
         """Returns a string with summary parameters of a uniform distribution
