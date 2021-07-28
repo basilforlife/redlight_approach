@@ -1,12 +1,21 @@
+from Red_Light_Approach.approach import Approach
+
+
 class TestApproach:
+    def test_type(self, approach):
+        assert isinstance(approach, Approach)
+
+    def test_repr(self, approach):
+        assert isinstance(approach.__repr__(), str)
+
+    def test_eq(self, approach):
+        assert approach == approach
+
     def test_calc_t_eval(self, approach, t_eval):
         assert approach.t_eval == t_eval
 
-    def test_init_state_v(self, approach, init_state):
-        assert init_state.v == approach.initial_state.v
-
-    def test_init_state_x(self, approach, init_state):
-        assert init_state.x == approach.initial_state.x
+    def test_init_state(self, approach, init_state):
+        assert init_state == approach.initial_state
 
     def test_compute_state_space_shape(self, approach, state_space_shape):
         assert approach.state_space_shape == state_space_shape

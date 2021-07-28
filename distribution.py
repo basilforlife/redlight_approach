@@ -16,7 +16,6 @@ class Distribution(ABC):
         ----------
         t_step
             The time step length in seconds
-
         """
         self.t_step = t_step
 
@@ -38,7 +37,6 @@ class Distribution(ABC):
         -------
         str
             A string summarizing the object
-
         """
         return f"{class_name} object: parameters: {parameters}"
 
@@ -50,7 +48,6 @@ class Distribution(ABC):
         -------
         numpy.ndarray
             An array of samples
-
         """
         pass
 
@@ -68,6 +65,22 @@ class UniformDistribution(Distribution):
     def __init__(
         self, first_support: float, last_support: float, t_step: float
     ) -> None:
+        """Initialize UniformDistribution object and create self.dist member
+
+        Parameters
+        ----------
+        first_support
+            The earliest support of the green light distribution in seconds
+        last_support
+            The latest support of the green light distribution in seconds
+        t_step
+            The time step length in seconds
+
+        Examples
+        --------
+        >>> UniformDistribution(2,4,1).dist
+        array([0. , 0. , 0.5, 0.5])
+        """
         super().__init__(t_step)
         self.first_support = first_support
         self.last_support = last_support
@@ -80,6 +93,13 @@ class UniformDistribution(Distribution):
         self.dist[-num_full_timesteps:] = support
 
     def __repr__(self) -> str:
+        """Returns a string with summary parameters of a uniform distribution
+
+        Returns
+        -------
+        str
+            A strings summarizing the object
+        """
         params = {
             "first_support": self.first_support,
             "last_support": self.last_support,
@@ -89,5 +109,17 @@ class UniformDistribution(Distribution):
 
     # This returns continuous samples with units [s]
     def sample(self, num_samples: int) -> Any:
+        """Sample from a continuous representation of the distribution
+
+        Parameters
+        ----------
+        num_samples
+            The number of samples to take
+
+        Returns
+        -------
+        numpy.ndarray
+            A 1D array of samples from the distribution
+        """
         self.rng = np.random.default_rng()
         return self.rng.uniform(self.first_support, self.last_support, num_samples)

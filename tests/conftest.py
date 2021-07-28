@@ -18,8 +18,7 @@ def uniform_dist():
 
 @pytest.fixture
 def approach():
-    approach = Approach("tests/test_params.json")
-    return approach
+    return Approach("tests/test_params.json")
 
 
 @pytest.fixture
