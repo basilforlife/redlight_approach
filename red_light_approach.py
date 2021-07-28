@@ -1,15 +1,14 @@
 import argparse
-import numpy as np
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 import traci
 import traci.constants as tc
 
-from Red_Light_Approach.state import State 
-from Red_Light_Approach.sumo_utils import *
+from Red_Light_Approach.state import State
 from Red_Light_Approach.sumo_simulation import SumoSimulation
-
+from Red_Light_Approach.sumo_utils import *
 
 # Set up argparse
 parser = argparse.ArgumentParser(description='Run a SUMO simulation with an approach controller')

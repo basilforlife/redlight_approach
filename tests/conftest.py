@@ -1,12 +1,11 @@
 import json
-import numpy as np
 
+import numpy as np
 import pytest
 
 from Red_Light_Approach.approach import Approach
 from Red_Light_Approach.distribution import *
 from Red_Light_Approach.state import State
-
 
 # Load test case parameters
 with open('tests/test_params.json') as f:

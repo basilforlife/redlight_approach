@@ -1,21 +1,14 @@
-# Author: Jonathan Roy
-# Date: 29 March 2020
-
-# This script implements the red light approach optimization
-
-
-# IMPORTS
-from itertools import product
 import json
-from math import floor, ceil
-import numpy as np
 import time
+from itertools import product
+from math import ceil, floor
 
+import numpy as np
 from progress.bar import IncrementalBar
 
+from Red_Light_Approach.approach_utils import round_to_step
 from Red_Light_Approach.distribution import UniformDistribution
 from Red_Light_Approach.state import State
-from Red_Light_Approach.approach_utils import round_to_step
 
 
 # Approach Class implements the algorithm

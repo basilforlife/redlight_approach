@@ -3,8 +3,6 @@ import xml.etree.ElementTree as ET
 
 from Red_Light_Approach.approach import Approach
 
-
-
 # ---------------------Args Processing Functions-------------------------------
 
 # This class creates a context manager for editing an xml tree and writing result to new file

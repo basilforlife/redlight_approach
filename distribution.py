@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from math import floor, ceil
+from math import ceil, floor
+
 import numpy as np
 
 

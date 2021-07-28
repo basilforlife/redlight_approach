@@ -1,4 +1,4 @@
-from math import floor, ceil
+from math import ceil, floor
 
 
 # This fn rounds things to the nearest discrete step

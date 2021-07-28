@@ -8,7 +8,6 @@ from Red_Light_Approach.state import State
 from Red_Light_Approach.sumo_utils import XMLFile
 
 
-
 # This class can run sumo a bunch
 class SumoSimulation():
 
