@@ -79,7 +79,7 @@ class Approach:
         # Use abs() because x is negative
         num_x_steps = int(abs(self.x_max - self.x_min) / self.x_step) + 1
         self.state_space_shape = (num_x_steps, num_v_steps)
-        self.state_space_bounds = [self.x_min, self.x_max, self.v_min, self.v_max]
+        self.state_space_bounds = (self.x_min, self.x_max, self.v_min, self.v_max)
 
     # this fn takes a json file and configures all the stuff
     # Includes parameters, initial conditions, and trivial consequences of these
@@ -111,7 +111,7 @@ class Approach:
         new_v = round_to_step(state.v, self.v_step)
 
         # Use a new State object so that boundaries get checked
-        return State(new_x, new_v)
+        return State(new_x, new_v, self.state_space_bounds)
 
     # Convert state to indices in a state space shaped matrix
     def state_to_indices(self, state):
@@ -173,7 +173,7 @@ class Approach:
                 # Set relevant element of adjacency matrix to True
                 try:
                     new_state = State(x_new_discrete, v_new, self.state_space_bounds)
-                except IndexError:  # If the state is out of bounds
+                except ValueError:  # If the state is out of bounds
                     pass
                 else:
                     i_new, j_new = self.state_to_indices(new_state)

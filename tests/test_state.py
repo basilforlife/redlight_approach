@@ -15,11 +15,11 @@ class TestState:
         assert init_state == same_state
 
     def test_x_boundaries(self, state_bounds):
-        with pytest.raises(IndexError):
+        with pytest.raises(ValueError):
             State(1, 10, state_bounds)
 
     def test_v_boundaries(self, state_bounds):
-        with pytest.raises(IndexError):
+        with pytest.raises(ValueError):
             State(1, 100, state_bounds)
 
     def test_valid_boundaries(self, state_bounds):
