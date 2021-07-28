@@ -1,26 +1,65 @@
 from abc import ABC, abstractmethod
 from math import floor
+from typing import Any
 
 import numpy as np
 
 
 # Abstract base class for distribution
 class Distribution(ABC):
-    def __init__(self, t_step):
+    """Abstract Base Class for green light waiting time distribution"""
+
+    def __init__(self, t_step: float) -> None:
+        """Initialize t_step for discrete distribution
+
+        Parameters
+        ----------
+        t_step
+            The time step length in seconds
+
+        """
         self.t_step = t_step
 
     @abstractmethod
-    def __repr__(self, class_name, parameters):
+    def __repr__(self, class_name: str, parameters: dict) -> str:
+        """Returns a string with summary parameters of a distribution
+
+        the __repr__ method is intended to be called from the method of the same name in a subclass,
+        to standardize formatting of distribution summary parameters
+
+        Parameters
+        ----------
+        class_name
+            The name of the subclass
+        parameters
+            A dictionary containing names and values of summary parameters
+
+        Returns
+        -------
+        str
+            A string summarizing the object
+
+        """
         return f"{class_name} object: parameters: {parameters}"
 
     @abstractmethod
-    def sample(self):
+    def sample(self) -> Any:
+        """Sample from a continuous representation of the distribution
+
+        Returns
+        -------
+        numpy.ndarray
+            An array of samples
+
+        """
         pass
 
 
 # Uniform distribution with delay
 class UniformDistribution(Distribution):
-    def __init__(self, first_support, last_support, t_step):
+    def __init__(
+        self, first_support: float, last_support: float, t_step: float
+    ) -> None:
         super().__init__(t_step)
         self.first_support = first_support
         self.last_support = last_support
@@ -32,7 +71,7 @@ class UniformDistribution(Distribution):
         support = np.ones(num_full_timesteps) / num_full_timesteps
         self.dist[-num_full_timesteps:] = support
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         params = {
             "first_support": self.first_support,
             "last_support": self.last_support,
@@ -41,6 +80,6 @@ class UniformDistribution(Distribution):
         return super().__repr__("UniformDistribution", params)
 
     # This returns continuous samples with units [s]
-    def sample(self, num_samples):
+    def sample(self, num_samples: int) -> Any:
         self.rng = np.random.default_rng()
         return self.rng.uniform(self.first_support, self.last_support, num_samples)
