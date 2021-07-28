@@ -57,6 +57,14 @@ class Distribution(ABC):
 
 # Uniform distribution with delay
 class UniformDistribution(Distribution):
+    """Represents a uniform distribution with a delay for green light wait times
+
+    This class builds and stores a uniform distribution represented discretely
+    with `t_step` step length, and provides a method `sample()` to sample
+    continuously from the distribution
+
+    """
+
     def __init__(
         self, first_support: float, last_support: float, t_step: float
     ) -> None:
