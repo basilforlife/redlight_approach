@@ -3,7 +3,7 @@ import json
 import pytest
 
 from Red_Light_Approach.approach import Approach
-from Red_Light_Approach.distribution import *
+from Red_Light_Approach.distribution import UniformDistribution
 from Red_Light_Approach.state import State
 
 # Load test case parameters
@@ -42,6 +42,7 @@ def init_state():
 @pytest.fixture
 def ran_red_state():
     return State(1, 10)
+
 
 @pytest.fixture
 def state_bounds():

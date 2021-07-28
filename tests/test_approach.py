@@ -1,11 +1,6 @@
-import pytest
-
-from Red_Light_Approach.state import State
-
-
 class TestApproach:
     def test_calc_t_eval(self, approach, t_eval):
-        assert approach.t_eval == t_eval 
+        assert approach.t_eval == t_eval
 
     def test_init_state_v(self, approach, init_state):
         assert init_state.v == approach.initial_state.v
@@ -21,13 +16,11 @@ class TestApproach:
         new_state = approach.indices_to_state(indices)
         assert init_state == new_state
 
-
     def test_indices_to_state_to_indices(self, approach):
-        indices = (100,36)
+        indices = (100, 36)
         new_state = approach.indices_to_state(indices)
         indices_2 = approach.state_to_indices(new_state)
         assert indices == indices_2
- 
-    def test_rho_red_light_check(self, approach, ran_red_state):
-        assert approach.rho(ran_red_state,10) == -999999999
 
+    def test_rho_red_light_check(self, approach, ran_red_state):
+        assert approach.rho(ran_red_state, 10) == -999999999
