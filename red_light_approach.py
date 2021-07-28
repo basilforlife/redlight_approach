@@ -1,14 +1,10 @@
 import argparse
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import traci
-import traci.constants as tc
 
-from Red_Light_Approach.state import State
 from Red_Light_Approach.sumo_simulation import SumoSimulation
-from Red_Light_Approach.sumo_utils import *
+from Red_Light_Approach.sumo_utils import load_approach
 
 # Set up argparse
 parser = argparse.ArgumentParser(description='Run a SUMO simulation with an approach controller')
@@ -27,7 +23,7 @@ parser.add_argument('-u', '--unpickle',
                     help='File to load approach object pickle from')
 parser.add_argument('-g', '--gui',
                     action='store_true',
-                    help='Run the simulation in sumo-gui. Default is to run in sumo') 
+                    help='Run the simulation in sumo-gui. Default is to run in sumo')
 parser.add_argument('-v', '--verbose',
                     action='store_true',
                     help='Print information about each timestep to console')
@@ -56,7 +52,7 @@ sumo_sim = SumoSimulation(approach,
 
 # Set up simulation stuff
 num_samples = args.N
-red_durations = approach.green_dist.sample(num_samples) # random sample from uniform distribution
+red_durations = approach.green_dist.sample(num_samples)  # random sample from uniform distribution
 timeloss = np.zeros_like(red_durations)
 
 # Run simulation N times
@@ -70,6 +66,6 @@ if args.N > 1:
     plt.show()
 
 # Print avg time saved
-if args.N == 1: print(f'Red light duration: {red_durations[0]}')
+if args.N == 1:
+    print(f'Red light duration: {red_durations[0]}')
 print(f'Mean time saved: {np.mean(timeloss):.2f}s')
-
