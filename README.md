@@ -32,11 +32,11 @@ in your terminal window.
 3. Edit `.bashrc` or `.zshrc`:
    * Add these lines to your shell's config file:
      ```
-     export SUMO_HOME=/path/to/sumo
-     export PYTHONPATH:$PYTHONPATH:/path/to/parent/
+     export SUMO_HOME="/path/to/sumo"
+     export PYTHONPATH="$PYTHONPATH:/path/to/parent/"
      ```
-        * Replace /path/to/sumo with your sumo location, which you can find with `$ which sumo`.
-        * Replace /path/to/parent with the directory into which you clone this repo, which you can find with `$ pwd`.
+        * Replace `/path/to/sumo` with your sumo location, which you can find with `$ which sumo`.
+        * Replace `/path/to/parent` with the directory into which you clone this repo, which you can find with `$ pwd`.
 
    * Load these environment variables with
      `$ source ~./bashrc` or `$source ~./zshrc`.
@@ -50,6 +50,9 @@ in your terminal window.
 6. Create and activate conda env:
    * `$ conda env create -f environment.yml`
    * `$ conda activate RLA`
+
+7. If you're going to contribute, add pre-commit hooks:
+   * `$pre-commit install`
 
 
 
