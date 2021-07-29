@@ -46,13 +46,23 @@ dependencies:
   - zstd=1.4.9=h322a384_0
   - pip:
     - attrs==21.2.0
+    - backports-entry-points-selectable==1.1.0
+    - cfgv==3.3.0
+    - distlib==0.3.2
+    - filelock==3.0.12
+    - identify==2.2.11
     - iniconfig==1.1.1
+    - nodeenv==1.6.0
     - numpy==1.21.1
     - packaging==21.0
+    - platformdirs==2.2.0
     - pluggy==0.13.1
+    - pre-commit==2.13.0
     - progress==1.5
     - py==1.10.0
     - pytest==6.2.4
+    - pyyaml==5.4.1
     - sumolib==1.9.2
     - toml==0.10.2
     - traci==1.9.2
+    - virtualenv==20.6.0
