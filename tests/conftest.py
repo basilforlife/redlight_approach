@@ -44,5 +44,10 @@ def ran_red_state():
 
 
 @pytest.fixture
+def will_run_red_state():
+    return State(-1, 10)
+
+
+@pytest.fixture
 def state_bounds():
     return [-100, 0, 0, 18]

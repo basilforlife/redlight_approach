@@ -1,11 +1,10 @@
 import json
-import time
 from itertools import product
 
 import numpy as np
 from progress.bar import IncrementalBar
 
-from Red_Light_Approach.approach_utils import round_to_step
+from Red_Light_Approach.approach_utils import round_to_step, timer
 from Red_Light_Approach.distribution import UniformDistribution
 from Red_Light_Approach.state import State
 
@@ -126,6 +125,9 @@ class Approach:
             self.state_space_bounds,
         )
 
+    def timestep_to_time(self, timestep):
+        return timestep * self.t_step
+
     # Calculate new vehicle position
     # mode refers to Riemann integration mode
     def delta_x(self, state, v_new, mode="trapezoidal"):
@@ -181,33 +183,73 @@ class Approach:
                         i, j, i_new, j_new
                     ] = True  # set appropriate edge to True
 
-    # rho() gives the value of a state at a point in time, if the event G has already occurred.
-    # It reflects the position at t_eval if the vehicle accelerates at a_max until reaching v_max.
-    # Args:
-    #     state: a State object containing the position and velocity
-    #     timestep:
-    # Returns:
-    #     the value of a state if event G occurs at the passed time
-    # TODO timestep does not map to seconds. Fix this with indx to clock time conversions like state space variables
-    def rho(self, state, timestep):
-        x, v = state.x, state.v
-        # delta_t: the difference between t_eval and the current time
-        delta_t = self.t_eval - timestep
+    def reward(self, state: State, timestep: int) -> float:
+        """Returns the reward of a state
 
-        # Derivation shown in notes from 4/3/2020
-        result = (
-            x + self.v_max * delta_t - 1 / 2 * 1 / self.a_max * (self.v_max - v) ** 2
-        )
+        Returns the reward of a given state and time, given that the traffic light is green
+        at that time. It is the position of vehicle at t_eval, when it is definitely up to
+        speed.
+
+        Parameters
+        ----------
+        state
+            Vehicle state
+        timestep
+            Index of discrete algorithm timestep
+
+        Returns
+        -------
+        float
+            The position at time t_eval
+
+        References
+        ----------
+        Roy, Jonathan. Red Light Approach Notes. 3 April 2020
+        """
+
+        # delta_t: the difference between t_eval and the current time
+        delta_t = self.t_eval - self.timestep_to_time(timestep)
+        current_x = state.x
+        max_delta_x = self.v_max * delta_t
+        acceleration_loss = -1 / 2 * 1 / self.a_max * (self.v_max - state.v) ** 2
+        return current_x + max_delta_x + acceleration_loss
+
+    def reward_with_red_check(self, state: State, timestep: int) -> float:
+        """Returns the reward of a state, with a low value if it leads to running the red light
+
+        Returns the reward incurred from a given state and timestep if the light turns green
+        on that timestep. However, it accounts for the possibility that the light does not
+        turn green by giving a large negative reward if the vehicle will necessarily run
+        the red light from the given state.
+
+        Parameters
+        ----------
+        state
+            Vehicle state
+        timestep
+            Index of discrete algorithm timestep
+
+        Returns
+        -------
+        float
+            The position at time t_eval, or a low value if running the red light
+
+        Notes
+        -----
+        This reward function does not relax it's negative penalty for running a red light, even if
+        there is certainty that the light will turn green by a given timestep, implied by the green
+        light distribution. This may be changed in the future.
+        """
+        reward = self.reward(state, timestep)
 
         # Check if you will run the red light at next timestep
         v_next_min = max(
             (state.v - self.a_max * self.t_step), self.v_min
         )  # maxed with v_min to avoid negative velocity
-        x_next_min = x + self.delta_x(state, v_next_min, mode="trapezoidal")
+        x_next_min = state.x + self.delta_x(state, v_next_min, mode="trapezoidal")
         if x_next_min > 0:
-            result = -999999999  # very bad value
-
-        return result
+            reward = -999999999  # very bad value
+        return reward
 
     # find_max_next_state() takes a state and a timestep, and returns the max value and location
     # of the states it can reach at the next timestep.
@@ -245,7 +287,7 @@ class Approach:
             argmax_reachable = 0  # This should never get used in the forward pass
 
         # weighted value if light turns green right now
-        cash_in_component = alpha * self.rho(
+        cash_in_component = alpha * self.reward_with_red_check(
             self.indices_to_state(state_indices), timestep
         )
 
@@ -262,6 +304,7 @@ class Approach:
     # for every state.
     # It must proceed backwards in time because the earlier states' values
     # depend on the later states' values
+    @timer
     def backward_pass(self):
 
         ss_shape = self.state_space_shape
@@ -278,7 +321,6 @@ class Approach:
         # Iterate through all timesteps to fill out I
         # This progresses backwards in clock time through I, which has rows in reverse chronological order
         bar = IncrementalBar("Calculating I", max=self.num_timesteps)
-        start = time.time()
         for timestep in range(self.num_timesteps - 1, -1, -1):
 
             # Iterate through all states
@@ -287,8 +329,6 @@ class Approach:
 
             bar.next()
         bar.finish()
-        stop = time.time()
-        print(f"Time to compute I: {stop - start}s")
 
     # This fn takes one step in time forward through I
     def forward_step(self, state, timestep):

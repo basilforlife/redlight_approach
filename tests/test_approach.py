@@ -1,4 +1,7 @@
+from math import isclose
+
 from Red_Light_Approach.approach import Approach
+from Red_Light_Approach.state import State
 
 
 class TestApproach:
@@ -9,7 +12,7 @@ class TestApproach:
         assert isinstance(approach.__repr__(), str)
 
     def test_eq(self, approach):
-        assert approach == approach
+        assert approach != Approach()
 
     def test_calc_t_eval(self, approach, t_eval):
         assert approach.t_eval == t_eval
@@ -31,5 +34,16 @@ class TestApproach:
         indices_2 = approach.state_to_indices(new_state)
         assert indices == indices_2
 
-    def test_rho_red_light_check(self, approach, ran_red_state):
-        assert approach.rho(ran_red_state, 10) == -999999999
+    def test_reward(self, approach, init_state):
+        reward = approach.reward(init_state, 0)
+        assert isclose(reward, 389.6)  # -100 + 27.2 * 18
+
+    def test_reward_2(self, approach):
+        reward = approach.reward(State(-50, 10), 20)
+        assert isclose(reward, 66.8)  # -50 + (27.2 - 20) * 18 - (1/2)*(1/2.5)*(18-10)^2
+
+    def test_reward_with_red_check(self, approach, ran_red_state):
+        assert approach.reward_with_red_check(ran_red_state, 10) == -999999999
+
+    def test_reward_with_red_check_2(self, approach, will_run_red_state):
+        assert approach.reward_with_red_check(will_run_red_state, 10) == -999999999
