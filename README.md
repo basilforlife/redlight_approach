@@ -52,7 +52,7 @@ in your terminal window.
    * `$ conda activate RLA`
 
 7. If you're going to contribute, add pre-commit hooks:
-   * `$pre-commit install`
+   * `$ pre-commit install`
 
 
 
