@@ -1,5 +1,6 @@
 import json
 from itertools import product
+from typing import Optional, Tuple
 
 import numpy as np
 from progress.bar import IncrementalBar
@@ -11,7 +12,7 @@ from Red_Light_Approach.state import State
 
 # Approach Class implements the algorithm
 class Approach:
-    def __init__(self, json_path=None):
+    def __init__(self, json_path: Optional[str] = None) -> None:
         # General params that are immutable
         self.v_min = 0  # obvious since cars don't back up
         self.x_max = 0  # value of x at stoplight
@@ -21,25 +22,48 @@ class Approach:
         else:
             self.params = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Approach object: configured with {self.params}"
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Approach") -> bool:
         if isinstance(other, Approach):
             return other.params == self.params
         else:
             return False
 
     # Set the parameters used for computation
-    def set_compute_params(self, x_step, v_step, t_step):
-        self.x_step = x_step  # discretization of position, in m
-        self.v_step = v_step  # discretization of velocity, in m/s
-        self.t_step = t_step  # length of time in seconds that a time step lasts
+    def set_compute_params(self, x_step: float, v_step: float, t_step: float) -> None:
+        """Sets the size of discrete steps for the state space and time
+
+        Parameters
+        ----------
+        x_step
+            Discrete step size of position dimension [m]
+        v_step
+            Discrete step size of velocity dimension [m/s]
+        t_step
+            Length of one timestep [s]
+        """
+        self.x_step = x_step
+        self.v_step = v_step
+        self.t_step = t_step
 
     # Set the parameters that characterize the world
-    def set_world_params(self, v_max, a_max):
+    def set_world_params(self, v_max: float, a_max: float) -> None:
+        """Sets the fixed parameters that characterize the world
 
-        # set v_max to the nearest smaller integer multiple of v_step
+        Sets the fixed parameters that define a given world, namely the speed limit
+        and the maximum vehicle accererlation(deceleration)
+
+        Parameters
+        ----------
+        v_max
+            Maximum allowed/possible/desired velocity [m/s]
+        a_max
+            Maximum possible/desired acceleration and deceleration [m/s]
+        """
+
+        # Set v_max to the nearest smaller integer multiple of v_step
         self.v_max = round_to_step(v_max, self.v_step, behavior="floor")
         self.a_max = a_max
 
@@ -232,7 +256,7 @@ class Approach:
 
         Notes
         -----
-        This reward function does not relax it's negative penalty for running a red light, even if
+        This reward function does not relax its negative penalty for running a red light, even if
         there is certainty that the light will turn green by a given timestep, implied by the green
         light distribution. This may be changed in the future.
         """
@@ -254,10 +278,30 @@ class Approach:
     #     timestep: algorithm timestep from which to look
     # Returns:
     #     tuple: (value of max reachable state, index of max reachable state)
-    def find_max_next_state(self, state_indices, timestep):
+    def find_max_next_state(
+        self, state_indices: Tuple[int, int], timestep: int
+    ) -> Tuple[float, int]:
+        """Returns a pointer to the highest valued reachable state at the next timestep
+
+        Given a state and timestep, this function finds the highest value reachable state at
+        the next timestep. It returns a 2-tuple containing the value of and a pointer to that state.
+
+        Parameters
+        ----------
+        state_indices
+            Indices in the form (i, j) representing the state
+        timestep
+            Index of discrete algorithm timestep from which to look forward
+
+        Returns
+        -------
+        tuple
+            A 2-tuple with the value of and pointer to the highest value reachable state. Note that
+            the pointer is ravelled; use np.unravel_index() to rectify
+        """
         reachable_mask = self.adj_matrix[
             state_indices[0], state_indices[1]
-        ]  # relevant slice of adj_matrix
+        ]  # Take relevant slice of adj_matrix
         next_state_vals = np.zeros(self.state_space_shape)
         for i, j in product(
             range(self.state_space_shape[0]), range(self.state_space_shape[1])
@@ -265,9 +309,7 @@ class Approach:
             next_state_vals[i, j] = self.I[timestep + 1, i, j, 0]
         reachable_vals = reachable_mask * next_state_vals
         max_reachable = np.max(reachable_vals)
-        argmax_reachable = np.argmax(
-            reachable_vals
-        )  # This stores the index raveled. Use np.unravel_index() to rectify
+        argmax_reachable = np.argmax(reachable_vals)  # This stores the index raveled
         return (max_reachable, argmax_reachable)
 
     def calc_I(self, state_indices, timestep):
