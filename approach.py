@@ -68,10 +68,6 @@ class Approach:
         v_start_discrete = round_to_step(v_start, self.v_step)
         self.initial_state = State(self.x_min, v_start_discrete)
 
-        # Set time to zero
-        # This might be unnecessary, since we don't implement algorithm results here
-        self.t = 0
-
     # Compute the size of the state space
     def compute_state_space_shape(self):
         num_v_steps = int((self.v_max - self.v_min) / self.v_step) + 1

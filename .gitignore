@@ -3,3 +3,4 @@
 **/*.pickle
 **/tripinfo.xml
 .idea
+.coverage

@@ -23,6 +23,10 @@ class TestApproach:
     def test_compute_state_space_shape(self, approach, state_space_shape):
         assert approach.state_space_shape == state_space_shape
 
+    def test_discretize_state(self, approach, init_state):
+        state = State(-99.55, 17.76)
+        assert approach.discretize_state(state) == init_state
+
     def test_state_to_indices_to_state(self, approach, init_state):
         indices = approach.state_to_indices(init_state)
         new_state = approach.indices_to_state(indices)
@@ -47,3 +51,7 @@ class TestApproach:
 
     def test_reward_with_red_check_2(self, approach, will_run_red_state):
         assert approach.reward_with_red_check(will_run_red_state, 10) == -999999999
+
+    def test_timestep_to_time(self, approach):
+        approach.t_step = 0.5
+        assert approach.timestep_to_time(17) == 8.5
