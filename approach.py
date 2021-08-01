@@ -31,7 +31,6 @@ class Approach:
         else:
             return False
 
-    # Set the parameters used for computation
     def set_compute_params(self, x_step: float, v_step: float, t_step: float) -> None:
         """Sets the size of discrete steps for the state space and time
 
@@ -48,7 +47,6 @@ class Approach:
         self.v_step = v_step
         self.t_step = t_step
 
-    # Set the parameters that characterize the world
     def set_world_params(self, v_max: float, a_max: float) -> None:
         """Sets the fixed parameters that characterize the world
 
@@ -67,17 +65,42 @@ class Approach:
         self.v_max = round_to_step(v_max, self.v_step, behavior="floor")
         self.a_max = a_max
 
-    # set traffic light distribution
-    def set_traffic_light_params(self, first_support, last_support):
+    def set_traffic_light_uniform_distribution(
+        self, first_support: float, last_support: float
+    ) -> None:
+        """Sets the green light event distribution to the specified uniform distribution
+
+        Sets the probability of event G occurring (the light turns green) for each timestep.
+        The support boundaries indicate at what time event G has support (is nonzero).
+
+        Parameters
+        ----------
+        first_support
+            Time of first support of event G [s]
+        last_support
+            Time of last support of event G [s]
+        """
         self.green_distribution = UniformDistribution(
             first_support, last_support, self.t_step
         )
-
-        self.calc_t_eval(last_support)
+        self.calc_t_eval(last_support)  # Calculate evaluation time
 
     # calc_t_eval() calculates t_eval, which is the time at which the vehicle will be back up to
     # speed in the worst case.
-    def calc_t_eval(self, last_support):
+    def calc_t_eval(self, last_support: float) -> None:
+        """Calculates the time at which to measure reward
+
+        Calculate the time at which the vehicle will definitely be back up to speed,
+        after passing through the signalized intersection. This assumes that the traffic
+        light distribution has a distinct time after which it has no support. This calculation
+        takes acceleration and speed limit into account. At this time, we can compare the performance
+        of any approach by looking at the vehicle position.
+
+        Parameters
+        ----------
+        last_support
+            Time at which event G will certainly have occurred [s]
+        """
         # eval_gap is the time it takes to get up to top speed in worst case
         eval_gap = self.v_max / self.a_max
         self.t_eval = last_support + eval_gap
@@ -114,7 +137,7 @@ class Approach:
         self.set_world_params(
             v_max=params["world_params"]["v_max"], a_max=params["world_params"]["a_max"]
         )
-        self.set_traffic_light_params(
+        self.set_traffic_light_uniform_distribution(
             first_support=params["traffic_light_params"]["first_support"],
             last_support=params["traffic_light_params"]["last_support"],
         )

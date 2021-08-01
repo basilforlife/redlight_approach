@@ -14,6 +14,12 @@ class TestApproach:
     def test_eq(self, approach):
         assert approach != Approach()
 
+    def test_set_world_params(self):
+        approach = Approach()
+        approach.set_compute_params(0.5, 0.5, 1)
+        approach.set_world_params(10.4, 2.5)
+        assert isclose(approach.v_max, 10)
+
     def test_calc_t_eval(self, approach, t_eval):
         assert approach.t_eval == t_eval
 
