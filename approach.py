@@ -1,6 +1,6 @@
 import json
 from itertools import product
-from typing import Any, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import numpy as np
 from progress.bar import IncrementalBar
@@ -238,9 +238,32 @@ class Approach:
         """
         return timestep * self.t_step
 
-    # Calculate new vehicle position
-    # mode refers to Riemann integration mode
-    def delta_x(self, state, v_new, mode="trapezoidal"):
+    def delta_x(self, state: State, v_new: float, mode: str = "trapezoidal") -> float:
+        """Approximates the new vehicle position after one timestep has elapsed
+
+        Approximates the new vehicle position based on its previous state and its new velocity.
+        The integration method is given by `mode`.
+
+        Parameters
+        ----------
+        state
+            A State object indicating the state at timestep t
+        v_new
+            The vehicle velocity at timestep t+1 [m/s]
+        mode
+            A string indicating the integration method. One of ('trapeziodal','right')
+
+        Returns
+        -------
+        float
+            The approximate new position of the vehicle [m]
+
+        Notes
+        -----
+        The integration mode 'right' uses a right Riemann sum, which is the default in SUMO.
+        The integration mode 'trapezoidal' uses the trapezoidal rule, which is more accurate.
+        SUMO can be set to use the trapezoidal rule to match this method, for better accuracy.
+        """
         if mode == "trapezoidal":
             v_avg = (state.v + v_new) / 2
             x_new = state.x + v_avg * self.t_step
@@ -250,14 +273,22 @@ class Approach:
             x_new_discrete = round_to_step(x_new, self.x_step)
         return x_new_discrete
 
-    # This fn builds a state adjacency matrix
-    # where the rows are states at t=k, and the columns are states at t=k+1
-    # A True represents an edge
-    # Args:
-    #     none
-    # Returns:
-    #     none
-    def build_adjacency_matrix(self):
+    @timer
+    def build_adjacency_matrix(self) -> None:
+        """Builds an adjacency matrix that indicates which states are reachable from a given state
+
+        Builds an adjacency matrix of size state_space_shape x state_space_shape. Since the
+        state space is 2D, the adjacency matrix is 4D. The "rows" (first two indices) represent
+        states at t=k, and the "columns" (last two indices) represent states at t=k+1. The value
+        of a cell is True if a vehicle can start from the "row" state at t=k and end at the
+        "column" state at t=k+1, and False otherwise.
+
+        Examples
+        --------
+        if self.adj_matrix[5,5,10,5] == True, this means that a vehicle at state indices [5,5] at
+        t=k can reach state indices [10,5] at t=k+1
+        """
+        print("Building Adjacency Matrix")
 
         # Init boolean array
         ss_size = self.state_space_shape
@@ -361,13 +392,6 @@ class Approach:
             reward = -999999999  # very bad value
         return reward
 
-    # find_max_next_state() takes a state and a timestep, and returns the max value and location
-    # of the states it can reach at the next timestep.
-    # Args:
-    #     idx: index of state from which to look
-    #     timestep: algorithm timestep from which to look
-    # Returns:
-    #     tuple: (value of max reachable state, index of max reachable state)
     def find_max_next_state(
         self, state_indices: Tuple[int, int], timestep: int
     ) -> Tuple[float, int]:
@@ -402,7 +426,20 @@ class Approach:
         argmax_reachable = np.argmax(reachable_vals)  # This stores the index raveled
         return (max_reachable, argmax_reachable)
 
-    def calc_I(self, state_indices, timestep):
+    def calc_I(self, state_indices: Tuple[int, int], timestep: int) -> None:
+        """Calculates the value of a given state at a given time
+
+        Calculates the value of a given state at a given time based on the highest
+        value state reachable at the next timestep, the probability of the light turning
+        green at this timestep, and the reward of the state.
+
+        Parameters
+        ----------
+        state_indices
+            Indices in the form (i, j) representing the state
+        timestep
+            Index of discrete algorithm timestep at which to measure state value
+        """
 
         # alpha is the probability of event G occurring right now
         alpha = self.green_distribution.distribution[timestep]
@@ -414,52 +451,68 @@ class Approach:
             max_reachable = 0
             argmax_reachable = 0  # This should never get used in the forward pass
 
-        # weighted value if light turns green right now
-        cash_in_component = alpha * self.reward_with_red_check(
+        # Reward if light turns green now weighted by P(light turns green)
+        weighted_reward = alpha * self.reward_with_red_check(
             self.indices_to_state(state_indices), timestep
         )
 
         # weighted expected value if light does not turn green right now
-        not_cash_in_component = (1 - alpha) * max_reachable
+        weighted_long_term_value = (1 - alpha) * max_reachable
 
         # add up for total expected value
-        value = cash_in_component + not_cash_in_component
+        value = weighted_reward + weighted_long_term_value
 
         # return expected value and pointer to next state
         return (value, argmax_reachable)
 
-    # This runs the bulk of the algorithm. It calculates I recursively
-    # for every state.
-    # It must proceed backwards in time because the earlier states' values
-    # depend on the later states' values
     @timer
-    def backward_pass(self):
+    def backward_pass(self) -> None:
+        """Calculates the value of every state at every timestep
+
+        Iterates backwards from the last timestep to the first timestep, calculating
+        the value of each state at each timestep. It must proceed backwards because
+        the value of a state at t=k depends on the value of reachable states at t=k+1.
+        """
 
         ss_shape = self.state_space_shape
 
         # calculate number of timesteps
         self.num_timesteps = len(
             self.green_distribution.distribution
-        )  # This should work out to be the number of timesteps from 0 to last_support
+        )  # This is the number of timesteps from 0 to last_support
 
         # Initialize I to timesteps x statespace size
         # Last dimension stores I and pointer to next state: [I, pointer_index]
         self.I = np.zeros((self.num_timesteps, ss_shape[0], ss_shape[1], 2))  # noqa
 
-        # Iterate through all timesteps to fill out I
-        # This progresses backwards in clock time through I, which has rows in reverse chronological order
+        # Iterate backwards through all timesteps to fill out I
         bar = IncrementalBar("Calculating I", max=self.num_timesteps)
         for timestep in range(self.num_timesteps - 1, -1, -1):
 
             # Iterate through all states
             for i, j in product(range(ss_shape[0]), range(ss_shape[1])):
                 self.I[timestep, i, j] = self.calc_I((i, j), timestep)
-
             bar.next()
         bar.finish()
 
-    # This fn takes one step in time forward through I
-    def forward_step(self, state, timestep):
+    def forward_step(self, state: State, timestep: int) -> Tuple[State, int]:
+        """Returns the best reachable state at the next timestep
+
+        Given a state and timestep t=k, return the State and ravelled index of the
+        highest value reachable state at t=k+1.
+
+        Parameters
+        ----------
+        state
+            Vehicle state
+        timestep
+            Index of discrete algorithm timestep from which to look forward
+
+        Returns
+        -------
+        tuple[State, int]
+            Tuple containing the best reachable State, and its ravelled index
+        """
 
         # Initial state indices
         i, j = self.state_to_indices(state)
@@ -473,10 +526,19 @@ class Approach:
 
         return (next_state, next_state_indices)
 
-    # This fn can be run after I is defined everywhere from backward_pass().
-    # it takes a path through the state space over time, and the result of
-    # this function is the desired behavior
-    def forward_pass(self):
+    def forward_pass(self) -> List[State]:
+        """Returns a motion plan defined by states at every timestep
+
+        Starting at the initial state, calculates the optimal motion plan by following
+        pointers in I() to find the best state at every timestep. The first element in
+        the resulting list is the initial state, the second is the best reachable state
+        at timestep 1, and so on.
+
+        Returns
+        -------
+        List[State]
+            A list of States defining the optimal motion plan
+        """
 
         # Initialize list to store path through state space
         state_list = [self.initial_state]

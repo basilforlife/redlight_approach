@@ -51,6 +51,6 @@ def timer(func: Callable) -> Callable:
         start = time.time()
         func(*args, **kwargs)
         stop = time.time()
-        print(f"Time to compute: {stop - start}s")
+        print(f"Time to compute: {stop - start:.2f}s")
 
     return wrapper
