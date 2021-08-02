@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import List
 
 import traci
 import traci.constants as tc
@@ -19,7 +20,7 @@ class SumoSimulation:
         first_edge_len,
         gui=False,
         verbose=False,
-    ):
+    ) -> None:
         self.add_sumo_path()
         self.approach = approach
         self.verbose = verbose
@@ -34,35 +35,61 @@ class SumoSimulation:
         )
 
     # This cleans up the object
-    def __del__(self):
+    def __del__(self) -> None:
         os.remove(self.temp_route_filename)
 
-    # This fn makes sure sumo is on the system path
-    def add_sumo_path(self):
-
-        # Ensure sumo is on the python load path
+    def add_sumo_path(self) -> None:
+        """Add sumo to python load path, and exit if sumo path is not found"""
         if "SUMO_HOME" in os.environ:
             tools = os.path.join(os.environ["SUMO_HOME"], "tools")
             sys.path.append(tools)
         else:
             sys.exit("please declare environment variable 'SUMO_HOME'")
 
-    # This fn puts a vehicle in the left lane permanently
-    def set_lane_change_static(self, vehicle_ID):
+    def set_lane_change_static(self, vehicle_ID: str) -> None:
+        """Sets a vehicle's behavior to not change lanes
+
+        Parameters
+        ----------
+        vehicle_ID
+            String indicating vehicle to set behavior for
+        """
         traci.vehicle.setLaneChangeMode(vehicle_ID, 0x000000000000)
 
-    # This fn set the speed limit for all lanes in the simulation
-    def set_lane_speed_limits(self, lane_IDs, speed_limit):
+    def set_lane_speed_limits(self, lane_IDs: List[str], speed_limit: float) -> None:
+        """Sets speed limits for a list of lanes
+
+        Parameters
+        ----------
+        lane_IDs
+            List of lane_ID strings
+        speed_limit
+            Desired speed limit [m/s]
+        """
         for ID in lane_IDs:
             traci.lane.setMaxSpeed(ID, speed_limit)
 
-    # This fn sets speed limit for whole simulation
-    def set_speed_limit(self, speed_limit):
+    def set_speed_limit(self, speed_limit: float) -> None:
+        """Set speed limit for every lane in a simulation
+
+        Parameters
+        ----------
+        speed_limit
+            Desired speed limit [m/s]
+        """
         lane_IDs = traci.lane.getIDList()
         self.set_lane_speed_limits(lane_IDs, speed_limit)
 
-    # This fn takes a time and sets the light red for that long
-    def set_red_light(self, red_duration, trafficlight_ID):
+    def set_red_light(self, red_duration: float, trafficlight_ID: str) -> None:
+        """Sets a traffic light to red for a given amount of time
+
+        Parameters
+        ----------
+        red_duration
+            Length of time for which light will be red [s]
+        trafficlight_ID
+            String indicating traffic light ID
+        """
         traci.trafficlight.setPhase(trafficlight_ID, 2)  # set traffic light to red
         traci.trafficlight.setPhaseDuration(trafficlight_ID, red_duration)
 
