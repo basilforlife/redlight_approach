@@ -1,5 +1,7 @@
 from math import isclose
 
+import pytest
+
 from Red_Light_Approach.approach import Approach
 from Red_Light_Approach.state import State
 
@@ -12,7 +14,8 @@ class TestApproach:
         assert isinstance(approach.__repr__(), str)
 
     def test_eq(self, approach):
-        assert approach != Approach()
+        with pytest.raises(NotImplementedError):
+            approach == approach
 
     def test_set_world_params(self):
         approach = Approach()

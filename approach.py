@@ -1,6 +1,6 @@
 import json
 from itertools import product
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as np
 from progress.bar import IncrementalBar
@@ -12,8 +12,23 @@ from Red_Light_Approach.state import State
 
 # Approach Class implements the algorithm
 class Approach:
+    """Represents a red light approach scenario and computes a time optimal approach.
+
+    This class builds a representation of a scenario where a vehicle approaches a
+    signalized intersection while the light is red. It computes the value of every reachable
+    state at every discrete timestep after the initialization time, over a discretized (position, velocity)
+    state space. The value function values states according to the expectation of time spent travelling.
+    It computes the optimal motion plan through the discrete state space over time.
+    """
+
     def __init__(self, json_path: Optional[str] = None) -> None:
-        # General params that are immutable
+        """Initialize Approach object, and optionally configure from a file
+
+        Parameters
+        ----------
+        json_path
+            The file path where the configuration file exists
+        """
         self.v_min = 0  # obvious since cars don't back up
         self.x_max = 0  # value of x at stoplight
 
@@ -25,11 +40,8 @@ class Approach:
     def __repr__(self) -> str:
         return f"Approach object: configured with {self.params}"
 
-    def __eq__(self, other: "Approach") -> bool:
-        if isinstance(other, Approach):
-            return other.params == self.params
-        else:
-            return False
+    def __eq__(self, other: Any) -> bool:
+        raise NotImplementedError
 
     def set_compute_params(self, x_step: float, v_step: float, t_step: float) -> None:
         """Sets the size of discrete steps for the state space and time
@@ -85,12 +97,10 @@ class Approach:
         )
         self.calc_t_eval(last_support)  # Calculate evaluation time
 
-    # calc_t_eval() calculates t_eval, which is the time at which the vehicle will be back up to
-    # speed in the worst case.
     def calc_t_eval(self, last_support: float) -> None:
         """Calculates the time at which to measure reward
 
-        Calculate the time at which the vehicle will definitely be back up to speed,
+        Calculates the time at which the vehicle will definitely be back up to speed,
         after passing through the signalized intersection. This assumes that the traffic
         light distribution has a distinct time after which it has no support. This calculation
         takes acceleration and speed limit into account. At this time, we can compare the performance
@@ -105,27 +115,44 @@ class Approach:
         eval_gap = self.v_max / self.a_max
         self.t_eval = last_support + eval_gap
 
-    # Set the initial conditions
-    # x_start should be negative
-    def set_init_conditions(self, x_start, v_start):
-        assert x_start < 0, "x_start should be negative"
-        self.x_min = round_to_step(
-            x_start, self.x_step
-        )  # position at which vehicle starts at
-        v_start_discrete = round_to_step(v_start, self.v_step)
-        self.initial_state = State(self.x_min, v_start_discrete)
-
-    # Compute the size of the state space
-    def compute_state_space_shape(self):
+    def compute_state_space_shape(self) -> None:
+        """Computes the size of the state space, and sets the state space edge boundaries"""
         num_v_steps = int((self.v_max - self.v_min) / self.v_step) + 1
         # Use abs() because x is negative
         num_x_steps = int(abs(self.x_max - self.x_min) / self.x_step) + 1
         self.state_space_shape = (num_x_steps, num_v_steps)
         self.state_space_bounds = (self.x_min, self.x_max, self.v_min, self.v_max)
 
-    # this fn takes a json file and configures all the stuff
-    # Includes parameters, initial conditions, and trivial consequences of these
-    def configure(self, json_path):
+    def set_init_conditions(self, x_start: float, v_start: float) -> None:
+        """Sets the initial state of the vehicle, and computes state space meta info
+
+        Parameters
+        ----------
+        x_start
+            Initial position of vehicle [m]. This is always a negative number if the vehicle
+            has not yet reached the intersection.
+        v_start
+            Initial velocity of vehicle [m/s]
+        """
+        assert x_start < 0, "x_start should be negative"
+        self.x_min = round_to_step(x_start, self.x_step)
+        v_start_discrete = round_to_step(v_start, self.v_step)
+        self.compute_state_space_shape()  # Do this here so self.state_space_bounds are set
+        self.initial_state = State(
+            self.x_min, v_start_discrete, self.state_space_bounds
+        )
+
+    def configure(self, json_path: str) -> None:
+        """Configures all parameters from a JSON file
+
+        Configures compute, world, and traffic light parameters, sets initial conditions,
+        and computes state space meta info.
+
+        Parameters
+        ----------
+        json_path
+            The file path where the configuration file exists
+        """
         with open(json_path) as f:
             params = json.load(f)
         self.params = params  # This is for __repr__()
@@ -145,30 +172,70 @@ class Approach:
             x_start=params["init_conditions"]["x_start"],
             v_start=params["init_conditions"]["v_start"],
         )
-        self.compute_state_space_shape()
 
-    # Discretize state to position and velocity steps
-    def discretize_state(self, state):
+    def discretize_state(self, state: State) -> State:
+        """Discretizes a continuous valued state object to the nearest discrete step
+
+        Parameters
+        ----------
+        state
+            State object; continuous values allowed
+        """
         new_x = round_to_step(state.x, self.x_step)
         new_v = round_to_step(state.v, self.v_step)
 
         # Use a new State object so that boundaries get checked
         return State(new_x, new_v, self.state_space_bounds)
 
-    # Convert state to indices in a state space shaped matrix
-    def state_to_indices(self, state):
+    def state_to_indices(self, state: State) -> Tuple[int, int]:
+        """Converts a State object to an index 2-tuple into the state space
+
+        Parameters
+        ----------
+        state
+            State object
+
+        Returns
+        -------
+        tuple
+            2-tuple of ints (x_idx, v_idx) that index into the state space
+        """
         state = self.discretize_state(state)
         return (int(state.x / self.x_step * -1), int(state.v / self.v_step))
 
-    # Convert indices(x,v) to state
-    def indices_to_state(self, indices):
+    def indices_to_state(self, indices: Tuple[int, int]) -> State:
+        """Converts an index 2-tuple on the state space to a state
+
+        Parameters
+        ----------
+        indices
+            2-tuple of ints (x_idx, v_idx) that index into the state space
+
+        Returns
+        -------
+        State
+            A State object corresponding to the indices
+        """
         return State(
             indices[0] * self.x_step * -1,
             indices[1] * self.v_step,
             self.state_space_bounds,
         )
 
-    def timestep_to_time(self, timestep):
+    def timestep_to_time(self, timestep: int) -> float:
+        """Converts an integer timestep to the corresponding time in seconds
+
+        Parameters
+        ----------
+        timestep
+            Index of discrete algorithm timestep
+
+        Returns
+        -------
+        float
+            Time [s]
+
+        """
         return timestep * self.t_step
 
     # Calculate new vehicle position

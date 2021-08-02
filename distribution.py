@@ -59,7 +59,6 @@ class UniformDistribution(Distribution):
     This class builds and stores a uniform distribution represented discretely
     with `t_step` step length, and provides a method `sample()` to sample
     continuously from the distribution
-
     """
 
     def __init__(
