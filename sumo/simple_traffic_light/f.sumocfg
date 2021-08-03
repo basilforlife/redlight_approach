@@ -6,8 +6,8 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/f.net.xml"/>
-        <route-files value="/Users/jonathanroy/Projects/Red_Light_Approach/sumo/simple_traffic_light/f.rou.xml"/>
+        <net-file value="/Users/jonathanroy/Projects/redlight_approach/sumo/simple_traffic_light/f.net.xml"/>
+        <route-files value="/Users/jonathanroy/Projects/redlight_approach/sumo/simple_traffic_light/f.rou.xml"/>
     </input>
  
     <processing>

@@ -5,9 +5,9 @@ from typing import Any, List, Optional, Tuple
 import numpy as np
 from progress.bar import IncrementalBar
 
-from Red_Light_Approach.approach_utils import round_to_step, timer
-from Red_Light_Approach.distribution import UniformDistribution
-from Red_Light_Approach.state import State
+from redlight_approach.approach_utils import round_to_step, timer
+from redlight_approach.distribution import UniformDistribution
+from redlight_approach.state import State
 
 
 # Approach Class implements the algorithm

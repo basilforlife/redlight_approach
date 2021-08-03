@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from Red_Light_Approach.approach import Approach
-from Red_Light_Approach.distribution import UniformDistribution
-from Red_Light_Approach.state import State
+from redlight_approach.approach import Approach
+from redlight_approach.distribution import UniformDistribution
+from redlight_approach.state import State
 
 # Load test case parameters
 with open("tests/test_params.json") as f:

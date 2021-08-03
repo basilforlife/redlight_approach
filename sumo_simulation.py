@@ -6,9 +6,9 @@ from typing import Dict, List
 import traci
 import traci.constants as tc
 
-from Red_Light_Approach.approach import Approach
-from Red_Light_Approach.state import State
-from Red_Light_Approach.sumo_utils import XMLFile
+from redlight_approach.approach import Approach
+from redlight_approach.state import State
+from redlight_approach.sumo_utils import XMLFile
 
 
 class SumoSimulation:
