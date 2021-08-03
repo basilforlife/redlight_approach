@@ -54,7 +54,6 @@ approach = load_approach(args)
 
 # Configure some filenames
 route_filename = "sumo/two_roads/f.rou.xml"
-temp_route_filename = "sumo/two_roads/modified.rou.xml"
 first_edge_len = 200
 
 # Configure SumoSimulation
@@ -62,7 +61,6 @@ sumo_sim = SumoSimulation(
     approach,
     args.sumocfg_file,
     route_filename,
-    temp_route_filename,
     first_edge_len,
     args.gui,
     args.verbose,
@@ -73,11 +71,9 @@ num_samples = args.N
 red_durations = approach.green_distribution.sample(
     num_samples
 )  # random sample from uniform distribution
-timeloss = np.zeros_like(red_durations)
 
 # Run simulation N times
-for i, red_duration in enumerate(red_durations):
-    timeloss[i] = sumo_sim.run(red_duration)
+timeloss = [sumo_sim.run(red_duration) for red_duration in red_durations]
 
 # Plot
 if args.N > 1:

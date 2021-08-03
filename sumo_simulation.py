@@ -1,32 +1,58 @@
 import os
 import sys
 import xml.etree.ElementTree as ET
-from typing import List
+from typing import Dict, List
 
 import traci
 import traci.constants as tc
 
+from Red_Light_Approach.approach import Approach
 from Red_Light_Approach.state import State
 from Red_Light_Approach.sumo_utils import XMLFile
 
 
 # This class can run sumo a bunch
 class SumoSimulation:
+    """Represents a simulation in sumo and configures and runs that simulation
+
+    This class manages a sumo simulation and modifies vehicle behavior according to an
+    Approach object. It uses TraCI to interact with the simulation. It builds the simulation
+    and matches the configuration to the Approach object configuration. Once configured, the
+    simulation can be run any number of times with a different red light duration using the
+    self.run(red_duration) method.
+    """
+
     def __init__(
         self,
-        approach,
-        sumocfg_filename,
-        route_filename,
-        temp_route_filename,
-        first_edge_len,
-        gui=False,
-        verbose=False,
+        approach: Approach,
+        sumocfg_filename: str,
+        route_filename: str,
+        first_edge_len: float,
+        gui: bool = False,
+        verbose: bool = False,
     ) -> None:
+        """Initialize and configure sumo simulation
+
+        Parameters
+        ----------
+        approach
+            Approach object to configure from and use for controlling approach
+        sumocfg_filename
+            Path to *.sumocfg file to run in sumo
+        route_filename
+            Path to *.rou.xml file to use in sumo simulation
+        first_edge_len
+            Length of first edge of route [m]
+        gui
+            Option to visualize simulations using sumo-gui. Passing True will enable
+        verbose
+            Option to print logs at each step of the simulation
+        """
         self.add_sumo_path()
         self.approach = approach
         self.verbose = verbose
-        self.temp_route_filename = temp_route_filename
-        self.set_sumo_command(gui, sumocfg_filename, temp_route_filename)
+        self.set_temp_route_filename(route_filename)
+        self.set_sumo_command(gui, sumocfg_filename, self.temp_route_filename)
         self.edit_rou_xml_file(
             route_filename,
             self.temp_route_filename,
@@ -35,8 +61,8 @@ class SumoSimulation:
             first_edge_len,
         )
 
-    # This cleans up the object
     def __del__(self) -> None:
+        """Removes temporary files created during initialization"""
         os.remove(self.temp_route_filename)
 
     def add_sumo_path(self) -> None:
@@ -239,8 +265,47 @@ class SumoSimulation:
             self.set_depart_pos_xml(xmlroot, x_min, edge_len)
             self.set_accel_decel_xml(xmlroot, a_max, a_max)
 
-    # Get a dict with vehicleID:timeLoss key value pairs from given tripinfo xml file
-    def get_timeloss_dict(self, filename):
+    def set_temp_route_filename(self, route_filename: str) -> None:
+        """Sets a temporary name for the modified route file
+
+        Parameters
+        ----------
+        route_filename
+            Path of existing *.rou.xml file
+
+        Notes
+        -----
+        Fails if the file already exists. If a SumoSimulation instance is initialized with the
+        same config files as an instance that already exists, it will fail.
+        """
+        basename = os.path.basename(route_filename)
+        name, extension = basename.split(".", 1)  # Only split on first period
+        temp_basename = name + "_modified" + "." + extension
+        temp_route_filename = os.path.join(
+            os.path.dirname(route_filename), temp_basename
+        )
+        assert not os.path.exists(
+            temp_route_filename
+        )  # Fail before setting so __del__ doesn't touch
+        self.temp_route_filename = temp_route_filename
+
+    def get_timeloss_dict(self, filename: str) -> Dict[str, float]:
+        """Make a dictionary mapping vehicle ID to time lost
+
+        Returns a dictionary that maps a vehicle ID string to the time loss as
+        calculated by sumo, which is the amount of time lost spent driving slower
+        than the speed limit.
+
+        Parameters
+        ----------
+        filename
+            Path to *.xml file where tripinfo is logged
+
+        Returns
+        -------
+        Dict[str, float]
+            Dictionary with vehicleID:timeLoss key value pairs
+        """
         timeloss_dict = {}
         with XMLFile(filename) as root:
             for child in root:
@@ -249,7 +314,9 @@ class SumoSimulation:
 
     # Do xml parsing to get timeloss results
     # Positive number represents approach having a beneficial effect
-    def get_timeloss_diff(self, filename, vehicle_ID_0, vehicle_ID_1):
+    def get_timeloss_diff(
+        self, filename: str, vehicle_ID_0: str, vehicle_ID_1: str
+    ) -> float:
         timeloss_dict = self.get_timeloss_dict(filename)
         return timeloss_dict[vehicle_ID_1] - timeloss_dict[vehicle_ID_0]
 
