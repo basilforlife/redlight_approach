@@ -49,7 +49,7 @@ in your terminal window.
 
 6. Create and activate conda env:
    * `$ conda env create -f environment.yml`
-   * `$ conda activate RLA`
+   * `$ conda activate rla`
 
 7. If you're going to contribute, add pre-commit hooks:
    * `$ pre-commit install`
