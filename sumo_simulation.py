@@ -1,5 +1,6 @@
 import os
 import sys
+import xml.etree.ElementTree as ET
 from typing import List
 
 import traci
@@ -93,20 +94,71 @@ class SumoSimulation:
         traci.trafficlight.setPhase(trafficlight_ID, 2)  # set traffic light to red
         traci.trafficlight.setPhaseDuration(trafficlight_ID, red_duration)
 
-    # This fn takes command line args and returns appropriate sumo config flags
-    def sumocfg_flag(self, sumocfg_filename):
+    def sumocfg_flag(self, sumocfg_filename: str) -> List[str]:
+        """Returns a list of words to specify a sumocfg file
+
+        Parameters
+        ----------
+        sumocfg_filename
+            The path to a *.sumocfg file to run in sumo
+
+        Returns
+        -------
+        List[str]
+            A list of words to add to the command line call of sumo
+        """
         return ["-c", sumocfg_filename]
 
-    # This fn takes an approach object and returns matching sumo config flags
-    def steplength_flag(self, t_step):
+    def steplength_flag(self, t_step: float) -> List[str]:
+        """Returns a list of words to specify a step length to sumo
+
+        Parameters
+        ----------
+        t_step
+            The length of one timestep in the sumo simulation [s]
+
+        Returns
+        -------
+        List[str]
+            A list of words to add to the command line call of sumo
+        """
         return ["--step-length", str(t_step)]
 
-    # This fn takes a fixed set of filenames to add to sumo flags
-    def routefile_flag(self, route_filename):
+    def routefile_flag(self, route_filename: str) -> List[str]:
+        """Returns a list of words to specify a route filename to sumo
+
+        Parameters
+        ----------
+        route_filename
+            The path to a *.rou.xml file to run in sumo
+
+        Returns
+        -------
+        List[str]
+            A list of words to add to the command line call of sumo
+        """
         return ["-r", route_filename]
 
     # This fn takes the command line args and returns the sumo command
-    def set_sumo_command(self, gui, sumocfg_filename, route_filename):
+    def set_sumo_command(
+        self, gui: bool, sumocfg_filename: str, route_filename: str
+    ) -> List[str]:
+        """Assembles a command line call to run sumo with specific flags and options
+
+        Parameters
+        ----------
+        gui
+            Bool indicating if the gui should be used
+        sumocfg_filename
+            Path to *.sumocfg file to run in sumo
+        route_filename
+            Path to *.rou.xml file to use for simulation
+
+        Returns
+        -------
+        List[str]
+            List of words that make up the correct sumo command line call
+        """
         if gui:
             sumo_location = "/usr/local/bin/sumo-gui"  # Use graphical simulator
         else:
@@ -117,23 +169,72 @@ class SumoSimulation:
         routefile_flag = self.routefile_flag(route_filename)
         self.sumo_command = command + sumocfg_flag + steplength_flag + routefile_flag
 
-    def set_depart_pos_xml(self, root, x_min, edge_len):
+    def set_depart_pos_xml(
+        self, root: ET.Element, x_min: float, edge_len: float
+    ) -> None:
+        """Edit an xml ElementTree to make vehicles appear at a specified position
+
+        Parameters
+        ----------
+        root
+            The root Element of an xml ElementTree from a *.rou.xml file
+        x_min
+            The starting location on the first edge of the route [m]
+        edge_len
+            The length of the first edge of the route [m]
+
+        Notes
+        -----
+        `x_min` is intended to match the x_min from the approach module, so
+        it is a negative number representing the distance in meters from the
+        traffic light intersection
+        """
         vehicles = root.findall("vehicle")
         for vehicle in vehicles:
             vehicle.attrib["departPos"] = str(
                 edge_len + x_min
             )  # x_min is negative, so set vehicle abs(x_min) back from end of edge
 
-    # This fn rewrites the rou.xml file to set accel and decel values
-    def set_accel_decel_xml(self, root, accel, decel):
+    def set_accel_decel_xml(self, root: ET.Element, accel: float, decel: float) -> None:
+        """Edit an xml ElementTree to change vehicle accel and decel parameters
+
+        Parameters
+        ----------
+        root
+            The root Element of an xml ElementTree from a *.rou.xml file
+        accel
+            The maximum acceleration of the vehicle [m/(s^2)]
+        decel
+            The maximum deceleration of the vehicle [m/(s^2)]
+        """
         vtype = root.find("vType")
         vtype.attrib["accel"] = str(accel)
         vtype.attrib["decel"] = str(decel)
         vtype.attrib["emergencyDecel"] = str(decel)
 
-    # This does the whole rou.xml processing
-    # Pass first edge_len that is for approaching the light
-    def edit_rou_xml_file(self, in_filename, out_filename, x_min, a_max, edge_len):
+    def edit_rou_xml_file(
+        self,
+        in_filename: str,
+        out_filename: str,
+        x_min: float,
+        a_max: float,
+        edge_len: float,
+    ) -> None:
+        """Write a temporary *.rou.xml file with specified parameters changed
+
+        Parameters
+        ----------
+        in_filename
+            The path to the *.rou.xml file to edit
+        out_filename
+            The path to the temporary *.rou.xml file
+        x_min
+            The starting location on the first edge of the route [m]
+        a_max
+            The maximum acceleration of a vehicle [m/(s^2)]
+        edge_len
+            The length of the first edge of the route [m]
+        """
         with XMLFile(in_filename, out_filename) as xmlroot:
             self.set_depart_pos_xml(xmlroot, x_min, edge_len)
             self.set_accel_decel_xml(xmlroot, a_max, a_max)
