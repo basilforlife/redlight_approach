@@ -42,10 +42,10 @@ in your terminal window.
      `$ source ~./bashrc` or `$source ~./zshrc`.
 
 4. Clone this repository:
-   * `$ git clone https://github.com/basilforlife/Red_Light_Approach.git`
+   * `$ git clone https://github.com/basilforlife/red-light-approach.git`
 
 5. Change directories to the root of Red_Light_Approach:
-   * `$ cd Red_Light_Approach`
+   * `$ cd red-light-approach`
 
 6. Create and activate conda env:
    * `$ conda env create -f environment.yml`
