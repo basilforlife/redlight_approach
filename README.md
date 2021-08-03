@@ -1,4 +1,4 @@
-# Red_Light_Approach
+# red-light-approach
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Red_Light_Approach is a Python package that computes an optimal (w.r.t. time) motion plan during traffic light approach.
