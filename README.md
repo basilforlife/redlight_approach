@@ -1,7 +1,7 @@
-# red-light-approach
+# redlight_approach
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-red-light-approach is a Python package that computes an optimal (w.r.t. time) motion plan during traffic light approach.
+redlight_approach is a Python package that computes an optimal (w.r.t. time) motion plan during traffic light approach.
 
 
 
@@ -42,10 +42,10 @@ in your terminal window.
      `$ source ~./bashrc` or `$source ~./zshrc`.
 
 4. Clone this repository:
-   * `$ git clone https://github.com/basilforlife/red-light-approach.git`
+   * `$ git clone https://github.com/basilforlife/redlight_approach.git`
 
 5. Change directories to the root of Red_Light_Approach:
-   * `$ cd red-light-approach`
+   * `$ cd redlight_approach`
 
 6. Create and activate conda env:
    * `$ conda env create -f environment.yml`
