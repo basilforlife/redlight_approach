@@ -11,7 +11,6 @@ from Red_Light_Approach.state import State
 from Red_Light_Approach.sumo_utils import XMLFile
 
 
-# This class can run sumo a bunch
 class SumoSimulation:
     """Represents a simulation in sumo and configures and runs that simulation
 
@@ -312,16 +311,53 @@ class SumoSimulation:
                 timeloss_dict[child.attrib["id"]] = float(child.attrib["timeLoss"])
         return timeloss_dict
 
-    # Do xml parsing to get timeloss results
-    # Positive number represents approach having a beneficial effect
     def get_timeloss_diff(
         self, filename: str, vehicle_ID_0: str, vehicle_ID_1: str
     ) -> float:
+        """Returns the difference in timeloss between the two specified vehicles
+
+        Parameters
+        ----------
+        filename
+            Path to *.xml file where tripinfo is written
+        vehicle_ID_0
+            ID string of vehicle
+        vehicle_ID_1
+            ID string of vehicle
+
+        Returns
+        -------
+        float
+            Difference in timeloss between the vehicles [s].
+
+        Notes
+        -----
+        A positive result would indicate that vehicle 0 had a smaller timeloss
+        than vehicle 1
+        """
         timeloss_dict = self.get_timeloss_dict(filename)
         return timeloss_dict[vehicle_ID_1] - timeloss_dict[vehicle_ID_0]
 
     # This fn runs a sumo/traci simulation and returns the timeLoss difference
-    def run(self, red_duration):
+    def run(self, red_duration: float) -> float:
+        """Runs a sumo simulation with the given red light duration
+
+        This method runs the sumo simulation as configured by __init__().
+        Runs are identical other than the specified red light duration. It returns the
+        timeloss difference between the naive vehicle and the approach controlled vehicle.
+        As it stands, this method runs the scenario where two vehicles approach a traffic
+        light on their own one lane straight road.
+
+        Parameters
+        ----------
+        red_duration
+           Duration of red light [s]
+
+        Returns
+        -------
+        float
+            Difference in timeloss between the two approach methods
+        """
         traci.start(self.sumo_command)
         self.set_speed_limit(self.approach.v_max)
         traci.vehicle.subscribe(
