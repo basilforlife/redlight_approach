@@ -15,7 +15,7 @@ To install, visit
 
 3. Homebrew\
 To install, run:\
-`$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`\
+`$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 in your terminal window.
 
 
@@ -66,14 +66,14 @@ Start XQuartz from the application folder. This must be running in order to use 
 ### Typical Use
 
 Run the default scenario with the graphical simulation:
-   * `$ python simple_comparison.py -c ./tests/test_params -g`
+   * `$ python simple_comparison.py -c parameter_files/original.json -g`
 
 To speed up future runs use the the `-p <filename>` option:
-   * `$ python simple_comparison.py -c ./tests/test_params -p test_params.pickle`
+   * `$ python simple_comparison.py -c parameter_files/original.json -p original.pickle`
 
 On subsequent runs, use `-u <filename>` to load the same configuration as before:
-   * `$ python simple_comparison.py -u test_params.pickle`
+   * `$ python simple_comparison.py -u original.pickle`
 
 To plot the result of N runs, use the `-N` option:
-   * `$ python simple_comparison.py -u test_params.pickle -N 100`
+   * `$ python simple_comparison.py -u original.pickle -N 100`
 
