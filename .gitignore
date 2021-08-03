@@ -4,3 +4,4 @@ pickle_files
 **/tripinfo.xml
 .idea
 .coverage
+**/*_modified.rou.xml
