@@ -1,6 +1,6 @@
 from math import isclose
 
-from Red_Light_Approach.approach_utils import round_to_step
+from redlight_approach.approach_utils import round_to_step
 
 
 class TestApproachUtils:

@@ -3,8 +3,8 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Red_Light_Approach.sumo_simulation import SumoSimulation
-from Red_Light_Approach.sumo_utils import load_approach
+from redlight_approach.sumo_simulation import SumoSimulation
+from redlight_approach.sumo_utils import load_approach
 
 if __name__ == "__main__":
     # Set up argparse

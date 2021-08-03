@@ -1,4 +1,4 @@
-name: RLA
+name: rla 
 channels:
   - defaults
 dependencies:

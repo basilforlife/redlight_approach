@@ -3,7 +3,7 @@ import pickle
 import xml.etree.ElementTree as ET
 from typing import Any, Optional
 
-from Red_Light_Approach.approach import Approach
+from redlight_approach.approach import Approach
 
 
 class XMLFile:

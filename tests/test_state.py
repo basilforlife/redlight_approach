@@ -1,6 +1,6 @@
 import pytest
 
-from Red_Light_Approach.state import State
+from redlight_approach.state import State
 
 
 class TestState:

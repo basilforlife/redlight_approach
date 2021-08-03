@@ -2,8 +2,8 @@ from math import isclose
 
 import pytest
 
-from Red_Light_Approach.approach import Approach
-from Red_Light_Approach.state import State
+from redlight_approach.approach import Approach
+from redlight_approach.state import State
 
 
 class TestApproach:

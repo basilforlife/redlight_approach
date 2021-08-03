@@ -3,7 +3,7 @@ from itertools import product
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Red_Light_Approach.approach import Approach
+from redlight_approach.approach import Approach
 
 if __name__ == "__main__":
     # Load test case parameters

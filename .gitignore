@@ -1,6 +1,6 @@
 **/*.swp
 **/*.pyc
-**/*.pickle
+pickle_files
 **/tripinfo.xml
 .idea
 .coverage

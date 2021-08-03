@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from Red_Light_Approach.distribution import Distribution, UniformDistribution
+from redlight_approach.distribution import Distribution, UniformDistribution
 
 
 class TestUniformDistribution:
