@@ -60,7 +60,7 @@ brew install sumo
 git clone https://github.com/basilforlife/redlight_approach.git
 ```
 
-6. Change directories to the root of Red_Light_Approach:
+6. Change directories to the root of redlight_approach:
 ```
 cd redlight_approach
 ```
