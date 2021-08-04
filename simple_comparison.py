@@ -60,6 +60,7 @@ if __name__ == "__main__":
     # Load approach object according to command line args
     approach = load_approach(args)
 
+    # Set first edge length as configured in sumo
     first_edge_len = 200
 
     # Configure SumoSimulation
