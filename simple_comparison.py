@@ -60,15 +60,13 @@ if __name__ == "__main__":
     # Load approach object according to command line args
     approach = load_approach(args)
 
-    # Configure some filenames
-    route_filename = "sumo/two_roads/f.rou.xml"
+    # Set first edge length as configured in sumo
     first_edge_len = 200
 
     # Configure SumoSimulation
     sumo_sim = SumoSimulation(
         approach,
         args.sumocfg_file,
-        route_filename,
         first_edge_len,
         args.gui,
         args.verbose,
