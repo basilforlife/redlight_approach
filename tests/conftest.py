@@ -7,7 +7,8 @@ from redlight_approach.distribution import UniformDistribution
 from redlight_approach.state import State
 
 # Load test case parameters
-with open("tests/test_params.json") as f:
+param_filename = "parameter_files/original.json"
+with open(param_filename) as f:
     test1 = json.load(f)
 
 
@@ -18,7 +19,7 @@ def uniform_dist():
 
 @pytest.fixture
 def approach():
-    return Approach("tests/test_params.json")
+    return Approach(param_filename)
 
 
 @pytest.fixture

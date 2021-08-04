@@ -48,6 +48,13 @@ if __name__ == "__main__":
         type=int,
         help="This option runs the simulation N times and if N > 1, it plots them. Defaults to N=1.",
     )
+    parser.add_argument(
+        "-r",
+        "--red-durations",
+        nargs="+",
+        type=float,
+        help="This option overrides the random red light durations with the given durations. Overrides -N flag.",
+    )
     args = parser.parse_args()
 
     # Load approach object according to command line args
@@ -67,22 +74,24 @@ if __name__ == "__main__":
         args.verbose,
     )
 
-    # Set up simulation stuff
-    num_samples = args.N
-    red_durations = approach.green_distribution.sample(
-        num_samples
-    )  # random sample from uniform distribution
+    # Get red_durations list
+    if args.red_durations:
+        red_durations = args.red_durations
+    else:
+        red_durations = approach.green_distribution.sample(
+            args.N
+        )  # random samples from distribution
 
-    # Run simulation N times
+    # Run simulation
     timeloss = [sumo_sim.run(red_duration) for red_duration in red_durations]
 
-    # Plot
-    if args.N > 1:
+    # Plot, or log if only one data point
+    if len(red_durations) > 1:
         plt.scatter(red_durations, timeloss)
         plt.title("test")
         plt.show()
+    else:
+        print(f"Red light duration: {red_durations[0]:.2f}s")
 
-    # Print avg time saved
-    if args.N == 1:
-        print(f"Red light duration: {red_durations[0]}")
+    # Print overall performance
     print(f"Mean time saved: {np.mean(timeloss):.2f}s")
