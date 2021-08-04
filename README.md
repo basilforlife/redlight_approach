@@ -1,9 +1,13 @@
+
+
+
+
 # redlight_approach
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 redlight_approach is a Python package that computes an optimal (w.r.t. time) motion plan during traffic light approach.
 
-
+https://user-images.githubusercontent.com/44418392/128101020-20c5214a-3589-4e8e-98c8-a589f5c9f901.mov
 
 ## Requirements
 
