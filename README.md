@@ -10,32 +10,48 @@ https://user-images.githubusercontent.com/44418392/128101020-20c5214a-3589-4e8e-
 
 ## Requirements
 
-1. macOS (no instructions written for linux but it should be possible)
+1. Linux or macOS
 
 2. Miniconda or Anaconda\
 To install, visit
 [Conda Installation](https://conda.io/projects/conda/en/latest/user-guide/install/macos.html)
 
-3. Homebrew\
-To install, run:
+3. SUMO: Installation instructions for [Linux (Ubuntu)](#install-sumo-ubuntu) and [macOS](#install-sumo-macos)
+
+
+## Install SUMO (Ubuntu)
+
+1. Build SUMO from source (see [SUMO Linux Build](https://sumo.dlr.de/docs/Installing/Linux_Build.html) for more details)
+```
+sudo apt-get install git cmake python3 g++ libxerces-c-dev libfox-1.6-dev libgdal-dev libproj-dev libgl2ps-dev
+git clone --recursive https://github.com/eclipse/sumo
+export SUMO_HOME="$PWD/sumo"
+mkdir sumo/build/cmake-build && cd sumo/build/cmake-build
+cmake ../..
+make -j$(nproc)
+sudo make install
+```
+
+
+## Install SUMO (macOS)
+
+1. Install Homebrew if you don't have it:
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
-
-
-
-## Installation (macOS)
-
-1. Install XQuartz with Homebrew:
+2. Install XQuartz with Homebrew:
 ```
 brew install --cask xquartz
 ```
 
-2. Install SUMO with Homebrew:
+3. Install SUMO with Homebrew:
 ```
 brew tap dlr-ts/sumo
 brew install sumo
 ```
+
+
+## Installation of redlight_approach
 
 3. Edit `.bashrc` or `.zshrc`:
   * Add these lines to your shell's config file:
@@ -85,7 +101,7 @@ Confirm installation was successful with the test suite:
 pytest
 ```
 
-Start XQuartz from the application folder. This must be running in order to use the `-g` (graphical) option.
+macOS: Start XQuartz from the application folder. This must be running in order to use the `-g` (graphical) option.
 
 ### Typical Use
 
