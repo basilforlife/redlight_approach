@@ -22,7 +22,7 @@
     </report>
 
     <gui_only>
-        <delay value="250"/>
+        <delay value="400"/>
         <quit-on-end value='true'/>
         <start value='false'/>
     </gui_only>

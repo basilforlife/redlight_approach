@@ -416,7 +416,7 @@ class SumoSimulation:
                 approaching = False
                 traci.vehicle.setSpeed("vehicle_0", -1)  # Hand control back to sumo
                 traci.vehicle.setColor(
-                    "vehicle_0", (24, 255, 130)
+                    "vehicle_0", (42, 118, 189)
                 )  # Change color when approach ends
 
             # This runs every timestep to control the approach
