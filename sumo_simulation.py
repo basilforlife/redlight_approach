@@ -25,7 +25,6 @@ class SumoSimulation:
         self,
         approach: Approach,
         sumocfg_filename: str,
-        route_filename: str,
         first_edge_len: float,
         gui: bool = False,
         verbose: bool = False,
@@ -38,8 +37,6 @@ class SumoSimulation:
             Approach object to configure from and use for controlling approach
         sumocfg_filename
             Path to *.sumocfg file to run in sumo
-        route_filename
-            Path to *.rou.xml file to use in sumo simulation
         first_edge_len
             Length of first edge of route [m]
         gui
@@ -50,6 +47,7 @@ class SumoSimulation:
         self.add_sumo_path()
         self.approach = approach
         self.verbose = verbose
+        route_filename = self.make_route_filename(sumocfg_filename)
         self.set_temp_route_filename(route_filename)
         self.set_sumo_command(gui, sumocfg_filename, self.temp_route_filename)
         self.edit_rou_xml_file(
@@ -263,6 +261,30 @@ class SumoSimulation:
         with XMLFile(in_filename, out_filename) as xmlroot:
             self.set_depart_pos_xml(xmlroot, x_min, edge_len)
             self.set_accel_decel_xml(xmlroot, a_max, a_max)
+
+    def make_route_filename(self, sumocfg_filename: str) -> str:
+        """Returns a route filename that matches the provided sumocfg filename
+
+        Parameters
+        ----------
+        sumocfg_filename
+            Path of *.sumocfg file
+
+        Returns
+        ------
+        str
+            Path of *.rou.xml file
+
+        Notes
+        -----
+        Fails if the file does not exist.
+        """
+        basename = os.path.basename(sumocfg_filename)
+        name, extension = basename.split(".", 1)  # Only split on first period
+        route_basename = name + ".rou.xml"
+        route_filename = os.path.join(os.path.dirname(sumocfg_filename), route_basename)
+        assert os.path.exists(route_filename)
+        return route_filename
 
     def set_temp_route_filename(self, route_filename: str) -> None:
         """Sets a temporary name for the modified route file
