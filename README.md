@@ -26,11 +26,15 @@ in your terminal window.
 ## Installation (macOS)
 
 1. Install XQuartz with Homebrew:
-   * `$ brew install --cask xquartz`
+```
+$ brew install --cask xquartz
+```
 
 2. Install SUMO with Homebrew:
-   * `$ brew tap dlr-ts/sumo`
-   * `$ brew install sumo`
+```
+$ brew tap dlr-ts/sumo
+$ brew install sumo
+```
 
 3. Edit `.bashrc` or `.zshrc`:
    * Add these lines to your shell's config file:
