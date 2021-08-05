@@ -1,4 +1,4 @@
-name: rla-test
+name: rla
 channels:
   - defaults
 dependencies:
