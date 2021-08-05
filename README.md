@@ -4,12 +4,18 @@
 # redlight_approach
 
 
-redlight_approach is a Python package that computes an optimal (w.r.t. time) motion plan during traffic light approach.
+redlight_approach is a Python package that computes an optimal motion plan during traffic light approach.
 
 
 
 https://user-images.githubusercontent.com/44418392/128278946-ac2c3225-8353-4c7d-8647-40f60f97f07d.mov
 
+Given the parameters of the road and vehicle, and a probability distribution describing when the traffic light will turn green,
+redlight_approach finds the optimal motion plan to minimize the expected amount of time spent traversing the intersection.
+It enacts the motion plan in a SUMO simulation, and a standard human driver is simulated for comparison. It reports the difference
+in time between the vehicles. The simulation above is cherry-picked, but the normal behavior samples a number of red light durations from
+traffic light probability distribution. Preliminary findings show that this traffic light approach planner will save vehicles time in realistic
+scenarios.
 
 
 ## Requirements
