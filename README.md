@@ -68,9 +68,9 @@ brew install sumo
 
   * Load these environment variables with
     ```
-    source ~./bashrc
+    source ~/.bashrc
     # or 
-    source ~./zshrc
+    source ~/.zshrc
     ```
 
 4. Clone this repository:
@@ -103,11 +103,11 @@ Confirm installation was successful with the test suite:
 pytest
 ```
 
-macOS: Start XQuartz from the application folder. This must be running in order to use the `-g` (graphical) option.
 
 ### Typical Use
 
-Run the default scenario with the graphical simulation:
+Run the default scenario with the `-g` (graphical) option:\
+Note: on macOS, XQuartz must be running in order to use the graphical option. Start XQuartz from the application folder.
 ```
 python simple_comparison.py -c parameter_files/original.json -g
 ```
@@ -125,6 +125,10 @@ python simple_comparison.py -u original.pickle
 To plot the result of N runs, use the `-N` option:
 ```
 python simple_comparison.py -u original.pickle -N 100
+```
+For a complete list of options, use the `-h` option:
+```
+python simple_comparison.py -h
 ```
 
 
