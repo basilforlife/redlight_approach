@@ -76,9 +76,9 @@ brew install sumo
 
   * Load these environment variables with
     ```
-    source ~./bashrc
+    source ~/.bashrc
     # or 
-    source ~./zshrc
+    source ~/.zshrc
     ```
 
 4. Clone this repository:
