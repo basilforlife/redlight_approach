@@ -6,7 +6,7 @@ import numpy as np
 from progress.bar import IncrementalBar
 
 from redlight_approach.approach_utils import round_to_step, timer
-from redlight_approach.distribution import UniformDistribution
+from redlight_approach.distribution import ArbitraryDistribution, UniformDistribution
 from redlight_approach.state import State
 
 
@@ -97,6 +97,25 @@ class Approach:
         )
         self.calc_t_eval(last_support)  # Calculate evaluation time
 
+    def set_traffic_light_arbitrary_distribution(
+        self,
+        distribution: List[float],
+    ) -> None:
+        """Sets the green light event distribution to the specified distribution
+
+        Sets the probability of event G occurring (the light turns green) for each timestep.
+
+        Parameters
+        ----------
+        distribution
+            List of floats indicating the probability of the light turning green at each timestep
+        """
+        self.green_distribution = ArbitraryDistribution(distribution, self.t_step)
+        # TODO this is wrong MAYBE
+        self.calc_t_eval(
+            len(self.green_distribution) * self.t_step
+        )  # Calculate evaluation time
+
     def calc_t_eval(self, last_support: float) -> None:
         """Calculates the time at which to measure reward
 
@@ -156,22 +175,33 @@ class Approach:
         with open(json_path) as f:
             params = json.load(f)
         self.params = params  # This is for __repr__()
+        compute_params = params["compute_params"]
+        world_params = params["world_params"]
+        traffic_light_params = params["traffic_light_params"]
+        distribution_type = traffic_light_params["type"]
+        init_conditions = params["init_conditions"]
+
         self.set_compute_params(
-            x_step=params["compute_params"]["x_step"],
-            v_step=params["compute_params"]["v_step"],
-            t_step=params["compute_params"]["t_step"],
+            x_step=compute_params["x_step"],
+            v_step=compute_params["v_step"],
+            t_step=compute_params["t_step"],
         )
-        self.set_world_params(
-            v_max=params["world_params"]["v_max"], a_max=params["world_params"]["a_max"]
-        )
-        self.set_traffic_light_uniform_distribution(
-            first_support=params["traffic_light_params"]["first_support"],
-            last_support=params["traffic_light_params"]["last_support"],
-        )
+        self.set_world_params(v_max=world_params["v_max"], a_max=world_params["a_max"])
         self.set_init_conditions(
-            x_start=params["init_conditions"]["x_start"],
-            v_start=params["init_conditions"]["v_start"],
+            x_start=init_conditions["x_start"],
+            v_start=init_conditions["v_start"],
         )
+
+        # Set traffic light distribution
+        if distribution_type == "uniform":
+            self.set_traffic_light_uniform_distribution(
+                first_support=traffic_light_params["first_support"],
+                last_support=traffic_light_params["last_support"],
+            )
+        if distribution_type == "arbitrary":
+            self.set_traffic_light_arbitrary_distribution(
+                distribution=traffic_light_params["distribution"]
+            )
 
     def discretize_state(self, state: State) -> State:
         """Discretizes a continuous valued state object to the nearest discrete step

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from math import floor
-from typing import Any
+from math import floor, isclose
+from typing import Any, List
 
 import numpy as np
 
@@ -52,7 +52,6 @@ class Distribution(ABC):
         pass
 
 
-# Uniform distribution with delay
 class UniformDistribution(Distribution):
     """Represents a uniform distribution with a delay for green light wait times
 
@@ -122,3 +121,59 @@ class UniformDistribution(Distribution):
         """
         self.rng = np.random.default_rng()
         return self.rng.uniform(self.first_support, self.last_support, num_samples)
+
+
+class ArbitraryDistribution(Distribution):
+    """Represents an arbitrary distribution with a delay for green light wait times
+
+    This class builds and stores an arbitrary distribution represented discretely
+    with `t_step` step length, and provides a method `sample()` to sample
+    from the distribution
+    """
+
+    def __init__(self, distribution: List[float], t_step: float) -> None:
+        """Initialize ArbitraryDistribution object and create self.dist member
+
+        Parameters
+        ----------
+        distribution
+        t_step
+            The time step length in seconds
+        """
+        super().__init__(t_step)
+        assert isclose(sum(distribution), 1), "Probability distribution must sum to 1"
+        self.distribution = distribution
+
+    def __repr__(self) -> str:
+        """Returns a string describing the distribution
+
+        Returns
+        -------
+        str
+            A strings summarizing the object
+        """
+        params = {
+            "distribution": self.distribution,
+            "t_step": self.t_step,
+        }
+        return super().__repr__("ArbitraryDistribution", params)
+
+    # This returns continuous samples with units [s]
+    def sample(self, num_samples: int) -> Any:
+        """Sample from a continuous representation of the distribution
+
+        Parameters
+        ----------
+        num_samples
+            The number of samples to take
+
+        Returns
+        -------
+        numpy.ndarray
+            A 1D array of samples from the distribution
+        """
+        rng = np.random.default_rng()
+        index_list = rng.choice(
+            list(range(len(self.distribution))), num_samples, self.distribution
+        )
+        return index_list * self.t_step

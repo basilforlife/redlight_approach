@@ -9,6 +9,7 @@
         "a_max":2.5
     },
     "traffic_light_params":{
+        "type":"uniform",
         "first_support":10,
         "last_support":20
     },

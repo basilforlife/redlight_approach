@@ -3,7 +3,7 @@ import json
 import pytest
 
 from redlight_approach.approach import Approach
-from redlight_approach.distribution import UniformDistribution
+from redlight_approach.distribution import ArbitraryDistribution, UniformDistribution
 from redlight_approach.state import State
 
 # Load test case parameters
@@ -15,6 +15,11 @@ with open(param_filename) as f:
 @pytest.fixture
 def uniform_dist():
     return UniformDistribution(10, 20, 1)
+
+
+@pytest.fixture
+def arbitrary_dist():
+    return ArbitraryDistribution([0, 0, 0, 0.1, 0.1, 0, 0, 0.2, 0.3, 0.2, 0.1, 0], 0.5)
 
 
 @pytest.fixture
