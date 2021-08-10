@@ -77,41 +77,29 @@ class Approach:
         self.v_max = round_to_step(v_max, self.v_step, behavior="floor")
         self.a_max = a_max
 
-    def set_traffic_light_uniform_distribution(
-        self, first_support: float, last_support: float
-    ) -> None:
-        """Sets the green light event distribution to the specified uniform distribution
-
-        Sets the probability of event G occurring (the light turns green) for each timestep.
-        The support boundaries indicate at what time event G has support (is nonzero).
-
-        Parameters
-        ----------
-        first_support
-            Time of first support of event G [s]
-        last_support
-            Time of last support of event G [s]
-        """
-        self.green_distribution = UniformDistribution(
-            first_support, last_support, self.t_step
-        )
-        self.calc_t_eval(last_support)  # Calculate evaluation time
-
-    def set_traffic_light_arbitrary_distribution(
-        self,
-        distribution: List[float],
-    ) -> None:
+    def set_traffic_light_distribution(self, traffic_light_params: dict) -> None:
         """Sets the green light event distribution to the specified distribution
 
         Sets the probability of event G occurring (the light turns green) for each timestep.
+        This method sets the distribution using the class that matches the type specified
+        in `traffic_light_params`.
 
         Parameters
         ----------
-        distribution
-            List of floats indicating the probability of the light turning green at each timestep
+        traffic_light_params
+            A dictionary containing the parameters and type of the distribution
         """
-        self.green_distribution = ArbitraryDistribution(distribution, self.t_step)
-        # TODO this is wrong MAYBE
+        distribution_type = traffic_light_params["type"]
+        if distribution_type == "uniform":
+            self.green_distribution = UniformDistribution(
+                first_support=traffic_light_params["first_support"],
+                last_support=traffic_light_params["last_support"],
+                t_step=self.t_step,
+            )
+        if distribution_type == "arbitrary":
+            self.green_distribution = ArbitraryDistribution(
+                distribution=traffic_light_params["distribution"], t_step=self.t_step
+            )
         self.calc_t_eval(
             len(self.green_distribution.distribution) * self.t_step
         )  # Calculate evaluation time
@@ -178,7 +166,6 @@ class Approach:
         compute_params = params["compute_params"]
         world_params = params["world_params"]
         traffic_light_params = params["traffic_light_params"]
-        distribution_type = traffic_light_params["type"]
         init_conditions = params["init_conditions"]
 
         self.set_compute_params(
@@ -191,17 +178,7 @@ class Approach:
             x_start=init_conditions["x_start"],
             v_start=init_conditions["v_start"],
         )
-
-        # Set traffic light distribution
-        if distribution_type == "uniform":
-            self.set_traffic_light_uniform_distribution(
-                first_support=traffic_light_params["first_support"],
-                last_support=traffic_light_params["last_support"],
-            )
-        if distribution_type == "arbitrary":
-            self.set_traffic_light_arbitrary_distribution(
-                distribution=traffic_light_params["distribution"]
-            )
+        self.set_traffic_light_distribution(traffic_light_params)
 
     def discretize_state(self, state: State) -> State:
         """Discretizes a continuous valued state object to the nearest discrete step
