@@ -105,7 +105,6 @@ class UniformDistribution(Distribution):
         }
         return super().__repr__("UniformDistribution", params)
 
-    # This returns continuous samples with units [s]
     def sample(self, num_samples: int) -> Any:
         """Sample from a continuous representation of the distribution
 
@@ -158,7 +157,6 @@ class ArbitraryDistribution(Distribution):
         }
         return super().__repr__("ArbitraryDistribution", params)
 
-    # This returns continuous samples with units [s]
     def sample(self, num_samples: int) -> Any:
         """Sample from a continuous representation of the distribution
 
