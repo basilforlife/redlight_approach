@@ -18,6 +18,7 @@ class Distribution(ABC):
             The time step length in seconds
         """
         self.t_step = t_step
+        self.distribution: Any
 
     @abstractmethod
     def __repr__(self, class_name: str, parameters: dict) -> str:
@@ -40,16 +41,29 @@ class Distribution(ABC):
         """
         return f"{class_name} object: parameters: {parameters}"
 
-    @abstractmethod
-    def sample(self) -> Any:
-        """Sample from a continuous representation of the distribution
+    def sample(self, num_samples: int) -> Any:
+        """Sample timesteps from the distribution
+
+        Samples durations using the distribution over durations, as defined in
+        each child class instance, to weight the choices.
+
+        Parameters
+        ----------
+        num_samples
+            The number of samples to take
 
         Returns
         -------
         numpy.ndarray
-            An array of samples
+            A 1D array of samples from the distribution
         """
-        pass
+        rng = np.random.default_rng()
+        random_indices = rng.choice(
+            len(self.distribution), size=num_samples, p=self.distribution
+        )
+        return (
+            random_indices * self.t_step
+        )  # return results with units of seconds, not timesteps
 
 
 class UniformDistribution(Distribution):
@@ -105,22 +119,6 @@ class UniformDistribution(Distribution):
         }
         return super().__repr__("UniformDistribution", params)
 
-    def sample(self, num_samples: int) -> Any:
-        """Sample from a continuous representation of the distribution
-
-        Parameters
-        ----------
-        num_samples
-            The number of samples to take
-
-        Returns
-        -------
-        numpy.ndarray
-            A 1D array of samples from the distribution
-        """
-        self.rng = np.random.default_rng()
-        return self.rng.uniform(self.first_support, self.last_support, num_samples)
-
 
 class ArbitraryDistribution(Distribution):
     """Represents an arbitrary distribution with a delay for green light wait times
@@ -156,22 +154,3 @@ class ArbitraryDistribution(Distribution):
             "t_step": self.t_step,
         }
         return super().__repr__("ArbitraryDistribution", params)
-
-    def sample(self, num_samples: int) -> Any:
-        """Sample from a continuous representation of the distribution
-
-        Parameters
-        ----------
-        num_samples
-            The number of samples to take
-
-        Returns
-        -------
-        numpy.ndarray
-            A 1D array of samples from the distribution
-        """
-        rng = np.random.default_rng()
-        index_list = rng.choice(
-            list(range(len(self.distribution))), num_samples, self.distribution
-        )
-        return index_list * self.t_step
