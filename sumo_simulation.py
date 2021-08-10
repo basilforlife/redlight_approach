@@ -130,7 +130,7 @@ class SumoSimulation:
         List[str]
             A list of words to add to the command line call of sumo
         """
-        return ["-c", sumocfg_filename]
+        return ["--configuration-file", sumocfg_filename]
 
     def steplength_flag(self, t_step: float) -> List[str]:
         """Returns a list of words to specify a step length to sumo
@@ -160,7 +160,26 @@ class SumoSimulation:
         List[str]
             A list of words to add to the command line call of sumo
         """
-        return ["-r", route_filename]
+        return ["--route-files", route_filename]
+
+    def fcd_flag(self, fcd_filename: str) -> List[str]:
+        """Returns a list of words to set an fcd file output
+
+        Returns a list of command line options that tells sumo to write an
+        fcd (floating car data) file to the given filepath. It contains information
+        about the vehicles like position and velocity at each timestep.
+
+        Parameters
+        ----------
+        fcd_filename : str
+            The path to a *.xml file to log the fcd data
+
+        Returns
+        -------
+        List[str]:
+            A list of words to add to the command line call of sumo
+        """
+        return ["--fcd-output", fcd_filename]
 
     # This fn takes the command line args and returns the sumo command
     def set_sumo_command(
@@ -190,7 +209,11 @@ class SumoSimulation:
         sumocfg_flag = self.sumocfg_flag(sumocfg_filename)
         steplength_flag = self.steplength_flag(self.approach.t_step)
         routefile_flag = self.routefile_flag(route_filename)
-        self.sumo_command = command + sumocfg_flag + steplength_flag + routefile_flag
+        fcd_filename = os.path.join(os.path.dirname(sumocfg_filename), "fcd.xml")
+        fcd_flag = self.fcd_flag(fcd_filename)
+        self.sumo_command = (
+            command + sumocfg_flag + steplength_flag + routefile_flag + fcd_flag
+        )
 
     def set_depart_pos_xml(
         self, root: ET.Element, x_min: float, edge_len: float
@@ -412,7 +435,22 @@ class SumoSimulation:
         )
         traci.vehicle.subscribe(vehicle_ID_0, subscriptions_tuple)
         traci.vehicle.subscribe(vehicle_ID_1, subscriptions_tuple)
-        self.set_red_light(red_duration, "0")  # Traffic light ID = '0'
+
+        # TODO remove
+        if self.verbose:
+            sub_results_0 = traci.vehicle.getSubscriptionResults(vehicle_ID_0)
+            sub_results_1 = traci.vehicle.getSubscriptionResults(vehicle_ID_1)
+            time = traci.simulation.getTime()
+            print(f"\n    STEP 0: time = {time}")
+            print(f"Traffic light probability: {trl_distribution[0]}")
+            self.print_vehicle_subscription_info(vehicle_ID_0, sub_results_0)
+            self.print_vehicle_subscription_info(vehicle_ID_1, sub_results_1)
+
+        # Add a t_step here because sumo tells vehicles to speed up by the time the
+        # light turns green, rather than allowing them to speed up after
+        self.set_red_light(
+            red_duration + self.approach.t_step, "0"
+        )  # Traffic light ID = '0'
 
         # Looping things
         step = 0
@@ -473,7 +511,6 @@ class SumoSimulation:
             if approaching:
                 if self.verbose:
                     print(f"approach_timestep {approach_timestep}")
-
                 next_state, _ = self.approach.forward_step(state, approach_timestep)
                 traci.vehicle.setSpeed(vehicle_ID_0, next_state.v)
                 approach_timestep += 1

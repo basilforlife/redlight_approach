@@ -113,7 +113,7 @@ class Approach:
         self.green_distribution = ArbitraryDistribution(distribution, self.t_step)
         # TODO this is wrong MAYBE
         self.calc_t_eval(
-            len(self.green_distribution) * self.t_step
+            len(self.green_distribution.distribution) * self.t_step
         )  # Calculate evaluation time
 
     def calc_t_eval(self, last_support: float) -> None:
