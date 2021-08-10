@@ -89,7 +89,7 @@ if __name__ == "__main__":
         plt.title("test")
         plt.show()
     else:
-        print(f"Red light duration: {red_durations[0]:.2f}s")
+        print(f"\nRed light duration: {red_durations[0]:.2f}s")
 
     # Print overall performance
     print(f"Mean time saved: {np.mean(timeloss):.2f}s")

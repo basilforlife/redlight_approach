@@ -360,7 +360,26 @@ class SumoSimulation:
         timeloss_dict = self.get_timeloss_dict(filename)
         return timeloss_dict[vehicle_ID_1] - timeloss_dict[vehicle_ID_0]
 
-    # This fn runs a sumo/traci simulation and returns the timeLoss difference
+    def print_vehicle_subscription_info(
+        self, vehicle_ID: str, sub_results: dict
+    ) -> None:
+        """Prints info about a vehicle's state from sumo TraCI
+
+        Parameters
+        ----------
+        vehicle_ID
+            The vehicle's ID
+        sub_results
+            a TraCI subscription containing position and velocity info
+
+        """
+        if sub_results:
+            pos = sub_results[86]
+            vel = sub_results[64]
+            print(f"{vehicle_ID}: pos = {pos:.2f}; vel = {vel:.2f}")
+        else:
+            print(f"{vehicle_ID} has left the route")
+
     def run(self, red_duration: float) -> float:
         """Runs a sumo simulation with the given red light duration
 
@@ -382,38 +401,47 @@ class SumoSimulation:
         """
         traci.start(self.sumo_command)
         self.set_speed_limit(self.approach.v_max)
-        traci.vehicle.subscribe(
-            "vehicle_0",
-            (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS),
+        vehicle_ID_0 = "vehicle_0"
+        vehicle_ID_1 = "vehicle_1"
+        trl_distribution = self.approach.green_distribution.distribution
+        subscriptions_tuple = (
+            tc.VAR_ROAD_ID,
+            tc.VAR_LANEPOSITION,
+            tc.VAR_SPEED,
+            tc.VAR_NEXT_TLS,
         )
-        traci.vehicle.subscribe(
-            "vehicle_1",
-            (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS),
-        )
+        traci.vehicle.subscribe(vehicle_ID_0, subscriptions_tuple)
+        traci.vehicle.subscribe(vehicle_ID_1, subscriptions_tuple)
         self.set_red_light(red_duration, "0")  # Traffic light ID = '0'
 
         # Looping things
         step = 0
         approaching = False
+        approach_timestep = None
         while traci.simulation.getMinExpectedNumber() != 0:
             traci.simulationStep()
             step += 1
-            sub_results = traci.vehicle.getSubscriptionResults("vehicle_0")
-            sub_results_1 = traci.vehicle.getSubscriptionResults("vehicle_1")
+
+            sub_results_0 = traci.vehicle.getSubscriptionResults(vehicle_ID_0)
+            sub_results_1 = traci.vehicle.getSubscriptionResults(vehicle_ID_1)
             green_light = (
                 red_duration / self.approach.t_step < step + 1
             )  # This is true if light is green
 
             if self.verbose:
-                print("step", step)
-                print(f"green_light = {green_light}")
-                print(sub_results)
-                print(sub_results_1)
+                time = traci.simulation.getTime()
+                print(f"\n    STEP {step}: time = {time}")
+                if step < len(trl_distribution):
+                    print(f"Traffic light probability: {trl_distribution[step]}")
+                if green_light:
+                    print("LIGHT IS GREEN")
+                self.print_vehicle_subscription_info(vehicle_ID_0, sub_results_0)
+                self.print_vehicle_subscription_info(vehicle_ID_1, sub_results_1)
 
             # Check to see if vehicle_0 has a traffic light ahead, else continue
             # Everything below here in the while loop is approach control
             try:
-                next_TLS = sub_results[112][0]
+                next_TLS = sub_results_0[112][0]
             except (KeyError, IndexError):
                 continue
 
@@ -421,7 +449,7 @@ class SumoSimulation:
             # -----------------BEGIN TLS-----------------------------------
 
             # Extract state from subscription results
-            state = State(next_TLS[2] * -1, sub_results[64])
+            state = State(next_TLS[2] * -1, sub_results_0[64])
 
             # Begin approach
             # This runs only once when vehicle arrives in state space bounds
@@ -429,31 +457,34 @@ class SumoSimulation:
                 approach_timestep = 0
                 approaching = True
                 traci.vehicle.setColor(
-                    "vehicle_0", (246, 186, 34)
+                    vehicle_ID_0, (246, 186, 34)
                 )  # Change color when approach starts
 
             # End approach
             # This runs only once to end the approach control
             if green_light and approaching:
                 approaching = False
-                traci.vehicle.setSpeed("vehicle_0", -1)  # Hand control back to sumo
+                traci.vehicle.setSpeed(vehicle_ID_0, -1)  # Hand control back to sumo
                 traci.vehicle.setColor(
-                    "vehicle_0", (42, 118, 189)
+                    vehicle_ID_0, (42, 118, 189)
                 )  # Change color when approach ends
 
             # This runs every timestep to control the approach
             if approaching:
-                next_state, _ = self.approach.forward_step(state, approach_timestep)
-                traci.vehicle.setSpeed("vehicle_0", next_state.v)
                 if self.verbose:
-                    print(f"approach timestep = {approach_timestep}")
+                    print(f"approach_timestep {approach_timestep}")
+
+                next_state, _ = self.approach.forward_step(state, approach_timestep)
+                traci.vehicle.setSpeed(vehicle_ID_0, next_state.v)
                 approach_timestep += 1
 
             # -------------------END TLS-----------------------------------
 
         # Exit traci context
+        if self.verbose:
+            print("----------SIMULATION COMPLETE----------")
         traci.close()
 
         return self.get_timeloss_diff(
-            "sumo/two_roads/tripinfo.xml", "vehicle_0", "vehicle_1"
+            "sumo/two_roads/tripinfo.xml", vehicle_ID_0, vehicle_ID_1
         )
