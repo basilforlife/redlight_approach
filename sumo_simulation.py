@@ -130,7 +130,7 @@ class SumoSimulation:
         List[str]
             A list of words to add to the command line call of sumo
         """
-        return ["-c", sumocfg_filename]
+        return ["--configuration-file", sumocfg_filename]
 
     def steplength_flag(self, t_step: float) -> List[str]:
         """Returns a list of words to specify a step length to sumo
@@ -160,7 +160,26 @@ class SumoSimulation:
         List[str]
             A list of words to add to the command line call of sumo
         """
-        return ["-r", route_filename]
+        return ["--route-files", route_filename]
+
+    def fcd_flag(self, fcd_filename: str) -> List[str]:
+        """Returns a list of words to set an fcd file output
+
+        Returns a list of command line options that tells sumo to write an
+        fcd (floating car data) file to the given filepath. It contains information
+        about the vehicles like position and velocity at each timestep.
+
+        Parameters
+        ----------
+        fcd_filename : str
+            The path to a *.xml file to log the fcd data
+
+        Returns
+        -------
+        List[str]:
+            A list of words to add to the command line call of sumo
+        """
+        return ["--fcd-output", fcd_filename]
 
     # This fn takes the command line args and returns the sumo command
     def set_sumo_command(
@@ -190,7 +209,11 @@ class SumoSimulation:
         sumocfg_flag = self.sumocfg_flag(sumocfg_filename)
         steplength_flag = self.steplength_flag(self.approach.t_step)
         routefile_flag = self.routefile_flag(route_filename)
-        self.sumo_command = command + sumocfg_flag + steplength_flag + routefile_flag
+        fcd_filename = os.path.join(os.path.dirname(sumocfg_filename), "fcd.xml")
+        fcd_flag = self.fcd_flag(fcd_filename)
+        self.sumo_command = (
+            command + sumocfg_flag + steplength_flag + routefile_flag + fcd_flag
+        )
 
     def set_depart_pos_xml(
         self, root: ET.Element, x_min: float, edge_len: float
@@ -360,7 +383,26 @@ class SumoSimulation:
         timeloss_dict = self.get_timeloss_dict(filename)
         return timeloss_dict[vehicle_ID_1] - timeloss_dict[vehicle_ID_0]
 
-    # This fn runs a sumo/traci simulation and returns the timeLoss difference
+    def print_vehicle_subscription_info(
+        self, vehicle_ID: str, sub_results: dict
+    ) -> None:
+        """Prints info about a vehicle's state from sumo TraCI
+
+        Parameters
+        ----------
+        vehicle_ID
+            The vehicle's ID
+        sub_results
+            a TraCI subscription containing position and velocity info
+
+        """
+        if sub_results:
+            pos = sub_results[86]
+            vel = sub_results[64]
+            print(f"{vehicle_ID}: pos = {pos:.2f}; vel = {vel:.2f}")
+        else:
+            print(f"{vehicle_ID} has left the route")
+
     def run(self, red_duration: float) -> float:
         """Runs a sumo simulation with the given red light duration
 
@@ -382,38 +424,52 @@ class SumoSimulation:
         """
         traci.start(self.sumo_command)
         self.set_speed_limit(self.approach.v_max)
-        traci.vehicle.subscribe(
-            "vehicle_0",
-            (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS),
+        vehicle_ID_0 = "vehicle_0"
+        vehicle_ID_1 = "vehicle_1"
+        trl_distribution = self.approach.green_distribution.distribution
+        subscriptions_tuple = (
+            tc.VAR_ROAD_ID,
+            tc.VAR_LANEPOSITION,
+            tc.VAR_SPEED,
+            tc.VAR_NEXT_TLS,
         )
-        traci.vehicle.subscribe(
-            "vehicle_1",
-            (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION, tc.VAR_SPEED, tc.VAR_NEXT_TLS),
-        )
-        self.set_red_light(red_duration, "0")  # Traffic light ID = '0'
+        traci.vehicle.subscribe(vehicle_ID_0, subscriptions_tuple)
+        traci.vehicle.subscribe(vehicle_ID_1, subscriptions_tuple)
+
+        # Add a t_step here because sumo tells vehicles to speed up by the time the
+        # light turns green, rather than allowing them to speed up after
+        self.set_red_light(
+            red_duration + self.approach.t_step, "0"
+        )  # Traffic light ID = '0'
 
         # Looping things
         step = 0
         approaching = False
+        approach_timestep = None
         while traci.simulation.getMinExpectedNumber() != 0:
             traci.simulationStep()
             step += 1
-            sub_results = traci.vehicle.getSubscriptionResults("vehicle_0")
-            sub_results_1 = traci.vehicle.getSubscriptionResults("vehicle_1")
+
+            sub_results_0 = traci.vehicle.getSubscriptionResults(vehicle_ID_0)
+            sub_results_1 = traci.vehicle.getSubscriptionResults(vehicle_ID_1)
             green_light = (
                 red_duration / self.approach.t_step < step + 1
             )  # This is true if light is green
 
             if self.verbose:
-                print("step", step)
-                print(f"green_light = {green_light}")
-                print(sub_results)
-                print(sub_results_1)
+                time = traci.simulation.getTime()
+                print(f"\n    STEP {step}: time = {time}")
+                if step < len(trl_distribution):
+                    print(f"Traffic light probability: {trl_distribution[step]:.2f}")
+                if green_light:
+                    print("LIGHT IS GREEN")
+                self.print_vehicle_subscription_info(vehicle_ID_0, sub_results_0)
+                self.print_vehicle_subscription_info(vehicle_ID_1, sub_results_1)
 
             # Check to see if vehicle_0 has a traffic light ahead, else continue
             # Everything below here in the while loop is approach control
             try:
-                next_TLS = sub_results[112][0]
+                next_TLS = sub_results_0[112][0]
             except (KeyError, IndexError):
                 continue
 
@@ -421,7 +477,7 @@ class SumoSimulation:
             # -----------------BEGIN TLS-----------------------------------
 
             # Extract state from subscription results
-            state = State(next_TLS[2] * -1, sub_results[64])
+            state = State(next_TLS[2] * -1, sub_results_0[64])
 
             # Begin approach
             # This runs only once when vehicle arrives in state space bounds
@@ -429,31 +485,33 @@ class SumoSimulation:
                 approach_timestep = 0
                 approaching = True
                 traci.vehicle.setColor(
-                    "vehicle_0", (246, 186, 34)
+                    vehicle_ID_0, (246, 186, 34)
                 )  # Change color when approach starts
 
             # End approach
             # This runs only once to end the approach control
             if green_light and approaching:
                 approaching = False
-                traci.vehicle.setSpeed("vehicle_0", -1)  # Hand control back to sumo
+                traci.vehicle.setSpeed(vehicle_ID_0, -1)  # Hand control back to sumo
                 traci.vehicle.setColor(
-                    "vehicle_0", (42, 118, 189)
+                    vehicle_ID_0, (42, 118, 189)
                 )  # Change color when approach ends
 
             # This runs every timestep to control the approach
             if approaching:
-                next_state, _ = self.approach.forward_step(state, approach_timestep)
-                traci.vehicle.setSpeed("vehicle_0", next_state.v)
                 if self.verbose:
-                    print(f"approach timestep = {approach_timestep}")
+                    print(f"approach_timestep {approach_timestep}")
+                next_state, _ = self.approach.forward_step(state, approach_timestep)
+                traci.vehicle.setSpeed(vehicle_ID_0, next_state.v)
                 approach_timestep += 1
 
             # -------------------END TLS-----------------------------------
 
         # Exit traci context
+        if self.verbose:
+            print("----------SIMULATION COMPLETE----------")
         traci.close()
 
         return self.get_timeloss_diff(
-            "sumo/two_roads/tripinfo.xml", "vehicle_0", "vehicle_1"
+            "sumo/two_roads/tripinfo.xml", vehicle_ID_0, vehicle_ID_1
         )

@@ -6,7 +6,7 @@ import numpy as np
 from progress.bar import IncrementalBar
 
 from redlight_approach.approach_utils import round_to_step, timer
-from redlight_approach.distribution import UniformDistribution
+from redlight_approach.distribution import ArbitraryDistribution, UniformDistribution
 from redlight_approach.state import State
 
 
@@ -77,25 +77,35 @@ class Approach:
         self.v_max = round_to_step(v_max, self.v_step, behavior="floor")
         self.a_max = a_max
 
-    def set_traffic_light_uniform_distribution(
-        self, first_support: float, last_support: float
-    ) -> None:
-        """Sets the green light event distribution to the specified uniform distribution
+    def set_traffic_light_distribution(self, traffic_light_params: dict) -> None:
+        """Sets the green light event distribution to the specified distribution
 
         Sets the probability of event G occurring (the light turns green) for each timestep.
-        The support boundaries indicate at what time event G has support (is nonzero).
+        This method sets the distribution using the class that matches the type specified
+        in `traffic_light_params`.
 
         Parameters
         ----------
-        first_support
-            Time of first support of event G [s]
-        last_support
-            Time of last support of event G [s]
+        traffic_light_params
+            A dictionary containing the parameters and type of the distribution
         """
-        self.green_distribution = UniformDistribution(
-            first_support, last_support, self.t_step
-        )
-        self.calc_t_eval(last_support)  # Calculate evaluation time
+        distribution_type = traffic_light_params["type"]
+        if distribution_type == "uniform":
+            self.green_distribution = UniformDistribution(
+                first_support=traffic_light_params["first_support"],
+                last_support=traffic_light_params["last_support"],
+                specification_t_step=traffic_light_params["specification_t_step"],
+                representation_t_step=self.t_step,
+            )
+        if distribution_type == "arbitrary":
+            self.green_distribution = ArbitraryDistribution(
+                distribution=traffic_light_params["distribution"],
+                specification_t_step=traffic_light_params["specification_t_step"],
+                representation_t_step=self.t_step,
+            )
+        self.calc_t_eval(
+            len(self.green_distribution.distribution) * self.t_step
+        )  # Calculate evaluation time
 
     def calc_t_eval(self, last_support: float) -> None:
         """Calculates the time at which to measure reward
@@ -156,22 +166,22 @@ class Approach:
         with open(json_path) as f:
             params = json.load(f)
         self.params = params  # This is for __repr__()
+        compute_params = params["compute_params"]
+        world_params = params["world_params"]
+        traffic_light_params = params["traffic_light_params"]
+        init_conditions = params["init_conditions"]
+
         self.set_compute_params(
-            x_step=params["compute_params"]["x_step"],
-            v_step=params["compute_params"]["v_step"],
-            t_step=params["compute_params"]["t_step"],
+            x_step=compute_params["x_step"],
+            v_step=compute_params["v_step"],
+            t_step=compute_params["t_step"],
         )
-        self.set_world_params(
-            v_max=params["world_params"]["v_max"], a_max=params["world_params"]["a_max"]
-        )
-        self.set_traffic_light_uniform_distribution(
-            first_support=params["traffic_light_params"]["first_support"],
-            last_support=params["traffic_light_params"]["last_support"],
-        )
+        self.set_world_params(v_max=world_params["v_max"], a_max=world_params["a_max"])
         self.set_init_conditions(
-            x_start=params["init_conditions"]["x_start"],
-            v_start=params["init_conditions"]["v_start"],
+            x_start=init_conditions["x_start"],
+            v_start=init_conditions["v_start"],
         )
+        self.set_traffic_light_distribution(traffic_light_params)
 
     def discretize_state(self, state: State) -> State:
         """Discretizes a continuous valued state object to the nearest discrete step

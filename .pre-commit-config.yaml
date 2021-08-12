@@ -1,6 +1,17 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+      - id: no-commit-to-branch # Don't allow a commit to master
+      - id: pretty-format-json
+        args: [--autofix, --no-sort-keys]
   - repo: https://github.com/pycqa/isort
-    rev: 5.9.2
+    rev: 5.9.3
     hooks:
       - id: isort
         name: isort (python)

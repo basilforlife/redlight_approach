@@ -1,7 +1,10 @@
 **/*.swp
 **/*.pyc
+parameter_files/*.json
+!parameter_files/original.json
 pickle_files
 **/tripinfo.xml
+**/fcd.xml
 .idea
 .coverage
 **/*_modified.rou.xml

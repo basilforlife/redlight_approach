@@ -9,6 +9,7 @@ dependencies:
   - pytest
   - pytest-cov
   - python=3.9
+  - scipy=1.6
   - pip:
     - pre-commit
     - traci 
