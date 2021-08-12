@@ -5,7 +5,6 @@ import pytest
 from redlight_approach.approach import Approach
 from redlight_approach.distribution import ArbitraryDistribution, UniformDistribution
 from redlight_approach.state import State
-from redlight_approach.sumo_simulation import SumoSimulation
 
 # Load test case parameters
 param_filename = "parameter_files/original.json"
@@ -70,8 +69,3 @@ def will_run_red_state():
 @pytest.fixture(scope="package")
 def state_bounds():
     return [-100, 0, 0, 18]
-
-
-@pytest.fixture(scope="package")
-def sumo_sim(approach):
-    return SumoSimulation(approach, "sumo/two_roads/f.sumocfg", 200)
