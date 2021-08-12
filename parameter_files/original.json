@@ -10,6 +10,7 @@
   },
   "traffic_light_params": {
     "type": "uniform",
+    "specification_t_step": 1,
     "first_support": 10,
     "last_support": 20
   },

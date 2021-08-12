@@ -94,11 +94,14 @@ class Approach:
             self.green_distribution = UniformDistribution(
                 first_support=traffic_light_params["first_support"],
                 last_support=traffic_light_params["last_support"],
-                t_step=self.t_step,
+                specification_t_step=traffic_light_params["specification_t_step"],
+                representation_t_step=self.t_step,
             )
         if distribution_type == "arbitrary":
             self.green_distribution = ArbitraryDistribution(
-                distribution=traffic_light_params["distribution"], t_step=self.t_step
+                distribution=traffic_light_params["distribution"],
+                specification_t_step=traffic_light_params["specification_t_step"],
+                representation_t_step=self.t_step,
             )
         self.calc_t_eval(
             len(self.green_distribution.distribution) * self.t_step

@@ -436,16 +436,6 @@ class SumoSimulation:
         traci.vehicle.subscribe(vehicle_ID_0, subscriptions_tuple)
         traci.vehicle.subscribe(vehicle_ID_1, subscriptions_tuple)
 
-        # TODO remove
-        if self.verbose:
-            sub_results_0 = traci.vehicle.getSubscriptionResults(vehicle_ID_0)
-            sub_results_1 = traci.vehicle.getSubscriptionResults(vehicle_ID_1)
-            time = traci.simulation.getTime()
-            print(f"\n    STEP 0: time = {time}")
-            print(f"Traffic light probability: {trl_distribution[0]}")
-            self.print_vehicle_subscription_info(vehicle_ID_0, sub_results_0)
-            self.print_vehicle_subscription_info(vehicle_ID_1, sub_results_1)
-
         # Add a t_step here because sumo tells vehicles to speed up by the time the
         # light turns green, rather than allowing them to speed up after
         self.set_red_light(
@@ -470,7 +460,7 @@ class SumoSimulation:
                 time = traci.simulation.getTime()
                 print(f"\n    STEP {step}: time = {time}")
                 if step < len(trl_distribution):
-                    print(f"Traffic light probability: {trl_distribution[step]}")
+                    print(f"Traffic light probability: {trl_distribution[step]:.2f}")
                 if green_light:
                     print("LIGHT IS GREEN")
                 self.print_vehicle_subscription_info(vehicle_ID_0, sub_results_0)
