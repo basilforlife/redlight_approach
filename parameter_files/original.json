@@ -6,7 +6,9 @@
   },
   "world_params": {
     "v_max": 18,
-    "a_max": 2.5
+    "d_max": 2.5,
+    "a_max": 2.5,
+    "a_approach_max": 2.5
   },
   "traffic_light_params": {
     "type": "uniform",

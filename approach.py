@@ -59,7 +59,9 @@ class Approach:
         self.v_step = v_step
         self.t_step = t_step
 
-    def set_world_params(self, v_max: float, a_max: float) -> None:
+    def set_world_params(
+        self, v_max: float, d_max: float, a_max: float, a_approach_max
+    ) -> None:
         """Sets the fixed parameters that characterize the world
 
         Sets the fixed parameters that define a given world, namely the speed limit
@@ -69,13 +71,22 @@ class Approach:
         ----------
         v_max
             Maximum allowed/possible/desired velocity [m/s]
+        d_max
+            Maximum possible/desired deceleration [m/s]
         a_max
-            Maximum possible/desired acceleration and deceleration [m/s]
+            Maximum possible/desired acceleration while getting back up to speed [m/s]
+        a_approach_max
+            Maximum desired acceleration while approaching red light [m/s]
         """
+
+        # Make sure a_approach_max is attainable
+        assert a_approach_max <= a_max
 
         # Set v_max to the nearest smaller integer multiple of v_step
         self.v_max = round_to_step(v_max, self.v_step, behavior="floor")
+        self.d_max = d_max
         self.a_max = a_max
+        self.a_approach_max = a_approach_max
 
     def set_traffic_light_distribution(self, traffic_light_params: dict) -> None:
         """Sets the green light event distribution to the specified distribution
@@ -176,7 +187,12 @@ class Approach:
             v_step=compute_params["v_step"],
             t_step=compute_params["t_step"],
         )
-        self.set_world_params(v_max=world_params["v_max"], a_max=world_params["a_max"])
+        self.set_world_params(
+            v_max=world_params["v_max"],
+            d_max=world_params["d_max"],
+            a_max=world_params["a_max"],
+            a_approach_max=world_params["a_approach_max"],
+        )
         self.set_init_conditions(
             x_start=init_conditions["x_start"],
             v_start=init_conditions["v_start"],
@@ -307,11 +323,14 @@ class Approach:
         # Iterate over all starting states
         for i, j in product(range(ss_size[0]), range(ss_size[1])):
             state = self.indices_to_state((i, j))
+            d_increment = (
+                self.d_max * self.t_step
+            )  # max acceleration that can occur in a timestep
             a_increment = (
-                self.a_max * self.t_step
+                self.a_approach_max * self.t_step
             )  # max acceleration that can occur in a timestep
             v_min, v_max = (
-                state.v - a_increment,
+                state.v - d_increment,
                 state.v + a_increment,
             )  # min, max of reachable states
             v_min_discrete = round_to_step(v_min, self.v_step, behavior="ceil")
@@ -395,7 +414,7 @@ class Approach:
 
         # Check if you will run the red light at next timestep
         v_next_min = max(
-            (state.v - self.a_max * self.t_step), self.v_min
+            (state.v - self.d_max * self.t_step), self.v_min
         )  # maxed with v_min to avoid negative velocity
         x_next_min = state.x + self.delta_x(state, v_next_min, mode="trapezoidal")
         if x_next_min > 0:

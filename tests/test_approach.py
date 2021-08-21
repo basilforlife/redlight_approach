@@ -17,11 +17,17 @@ class TestApproach:
         with pytest.raises(NotImplementedError):
             approach == approach
 
-    def test_set_world_params(self):
+    def test_set_world_params(self, approach):
         approach = Approach()
         approach.set_compute_params(0.5, 0.5, 1)
-        approach.set_world_params(10.4, 2.5)
+        approach.set_world_params(10.4, 2.5, 2.5, 0)
         assert isclose(approach.v_max, 10)
+
+    def test_set_world_params_fail(self, approach):
+        with pytest.raises(AssertionError):
+            approach = Approach()
+            approach.set_compute_params(0.5, 0.5, 1)
+            approach.set_world_params(10.4, 2.5, 2.5, 3.5)
 
     def test_calc_t_eval(self, approach, t_eval):
         assert approach.t_eval == t_eval
