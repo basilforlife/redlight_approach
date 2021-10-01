@@ -22,7 +22,7 @@ class NeuralNetwork(nn.Module):
 
 
 # Define training loop
-def train(dataloader, model, loss_fn, optimizer):
+def train(dataloader, model, loss_fn, optimizer, device):
     size = len(dataloader.dataset)
     model.train()
     for batch, (x, p) in enumerate(dataloader):
@@ -44,7 +44,7 @@ def train(dataloader, model, loss_fn, optimizer):
 
 
 # Define testing procedure
-def test(dataloader, model, loss_fn):
+def test(dataloader, model, loss_fn, device):
     num_batches = len(dataloader)
     model.eval()
     test_loss = 0
@@ -55,8 +55,3 @@ def test(dataloader, model, loss_fn):
             test_loss += loss_fn(pred, p).item()
     test_loss /= num_batches
     print(f"Test Error: Avg loss = {test_loss:>8f}")
-
-
-# Define device
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using {device} device")
