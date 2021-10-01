@@ -8,3 +8,4 @@ pickle_files
 .idea
 .coverage
 **/*_modified.rou.xml
+**/*.parameters
