@@ -3,6 +3,7 @@
 parameter_files/*.json
 !parameter_files/original.json
 pickle_files
+**/*.pickle
 **/tripinfo.xml
 **/fcd.xml
 .idea
