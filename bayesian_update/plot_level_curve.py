@@ -14,7 +14,7 @@ model.eval()  # Set to inference mode
 
 # Make data to plot
 x = np.arange(1, 10, 0.1)
-y = 5
+y = 3
 
 X = [[a, y] for a in x]  # Vary x, hold y constant
 input = torch.Tensor(X)
